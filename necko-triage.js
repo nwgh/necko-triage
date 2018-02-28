@@ -5,10 +5,114 @@ NeckoTriage.prototype.tables = {};
 NeckoTriage.prototype.rootElement = "#necko-triage-root";
 NeckoTriage.prototype.version = "0.0.1";
 NeckoTriage.prototype.availableTables = {
-    "untriaged-no-ni": {"title": "Untriaged bugs (without ni?)", "url": "https://bugzilla.mozilla.org/rest/bug?component=Networking&component=Networking%3A%20Cache&component=Networking%3A%20Cookies&component=Networking%3A%20DNS&component=Networking%3A%20Domain%20Lists&component=Networking%3A%20File&component=Networking%3A%20FTP&component=Networking%3A%20HTTP&component=Networking%3A%20JAR&component=Networking%3A%20WebSockets&f0=OP&f1=OP&f2=flagtypes.name&f3=CP&f4=CP&j1=OR&n2=1&o2=substring&product=Core&resolution=---&status_whiteboard=%5C%5Bnecko-triaged%5C%5D|%5C%5Bnecko-active%5C%5D|%5C%5Bnecko-next%5C%5D|%5C%5Bnecko-backlog%5C%5D|%5C%5Bnecko-would-take%5C%5D&status_whiteboard_type=notregexp&v2=needinfo%3F"},
-    "untriaged-ni": {"title": "Untriaged bugs (awaiting ni?)", "url": "https://bugzilla.mozilla.org/rest/bug?priority=--&f1=flagtypes.name&o1=substring&resolution=---&status_whiteboard_type=notregexp&query_format=advanced&status_whiteboard=%5C%5Bnecko-triaged%5C%5D&v1=needinfo%3F&component=Networking&component=Networking%3A%20Cache&component=Networking%3A%20Cookies&component=Networking%3A%20DNS&component=Networking%3A%20Domain%20Lists&component=Networking%3A%20File&component=Networking%3A%20FTP&component=Networking%3A%20HTTP&component=Networking%3A%20JAR&component=Networking%3A%20WebSockets&product=Core"},
-    "malformed": {"title": "Malformed bugs", "url": "https://bugzilla.mozilla.org/rest/bug?priority=--&resolution=---&status_whiteboard_type=regexp&query_format=advanced&status_whiteboard=%5C%5Bnecko-triaged%5C%5D|%5C%5Bnecko-backlog%5C%5D|%5C%5Bnecko-would-take%5C%5D|%5C%5Bnecko-active%5C%5D|%5C%5Bnecko-next%5C%5D&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&component=Networking&component=Networking%3A%20Cache&component=Networking%3A%20Cookies&component=Networking%3A%20DNS&component=Networking%3A%20Domain%20Lists&component=Networking%3A%20File&component=Networking%3A%20FTP&component=Networking%3A%20HTTP&component=Networking%3A%20JAR&component=Networking%3A%20WebSockets&product=Core"},
-    "p1-unassigned": {"title": "Unassigned P1 bugs", "url": "https://bugzilla.mozilla.org/rest/bug?priority=P1&f1=assigned_to&o1=isempty&resolution=---&query_format=advanced&component=Networking&component=Networking%3A%20Cache&component=Networking%3A%20Cookies&component=Networking%3A%20DNS&component=Networking%3A%20Domain%20Lists&component=Networking%3A%20File&component=Networking%3A%20FTP&component=Networking%3A%20HTTP&component=Networking%3A%20JAR&component=Networking%3A%20WebSockets&product=Core"}
+    "untriaged-no-ni": {
+        "title": "Untriaged bugs (without ni?)",
+        "query": {
+            "f0": "OP",
+            "f1": "OP",
+            "f2": "flagtypes.name",
+            "f3": "CP",
+            "f4": "CP",
+            "status_whiteboard": "\\[necko-triaged\\]|\\[necko-active\\]|\\[necko-next\\]|\\[necko-backlog\\]|\\[necko-would-take\\]",
+            "status_whiteboard_type": "notregexp",
+            "component": [
+                "Networking",
+                "Networking: Cache",
+                "Networking: Cookies",
+                "Networking: DNS",
+                "Networking: Domain Lists",
+                "Networking: File",
+                "Networking: FTP",
+                "Networking: HTTP",
+                "Networking: JAR",
+                "Networking: WebSockets"
+            ],
+            "j1": "OR",
+            "product": "Core",
+            "v2": "needinfo?",
+            "n2": "1",
+            "resolution": "---",
+            "o2": "substring"
+        }
+    },
+    "untriaged-ni": {
+        "title": "Untriaged bugs (awaiting ni?)",
+        "query": {
+            "status_whiteboard": "\\[necko-triaged\\]",
+            "product": "Core",
+            "query_format": "advanced",
+            "status_whiteboard_type": "notregexp",
+            "component": [
+                "Networking",
+                "Networking: Cache",
+                "Networking: Cookies",
+                "Networking: DNS",
+                "Networking: Domain Lists",
+                "Networking: File",
+                "Networking: FTP",
+                "Networking: HTTP",
+                "Networking: JAR",
+                "Networking: WebSockets"
+            ],
+            "f1": "flagtypes.name",
+            "v1": "needinfo?",
+            "resolution": "---",
+            "o1": "substring",
+            "priority": "--"
+        }
+    },
+    "malformed": {
+        "title": "Malformed bugs",
+        "query": {
+            "status_whiteboard_type": "regexp",
+            "product": "Core",
+            "query_format": "advanced",
+            "status_whiteboard": "\\[necko-triaged\\]|\\[necko-backlog\\]|\\[necko-would-take\\]|\\[necko-active\\]|\\[necko-next\\]",
+            "bug_status": [
+                "UNCONFIRMED",
+                "NEW",
+                "ASSIGNED",
+                "REOPENED"
+            ],
+            "component": [
+                "Networking",
+                "Networking: Cache",
+                "Networking: Cookies",
+                "Networking: DNS",
+                "Networking: Domain Lists",
+                "Networking: File",
+                "Networking: FTP",
+                "Networking: HTTP",
+                "Networking: JAR",
+                "Networking: WebSockets"
+            ],
+            "priority": "--",
+            "resolution": "---"
+        }
+    },
+    "p1-unassigned": {
+        "title": "Unassigned P1 bugs",
+        "query": {
+            "f1": "assigned_to",
+            "product": "Core",
+            "query_format": "advanced",
+            "component": [
+                "Networking",
+                "Networking: Cache",
+                "Networking: Cookies",
+                "Networking: DNS",
+                "Networking: Domain Lists",
+                "Networking: File",
+                "Networking: FTP",
+                "Networking: HTTP",
+                "Networking: JAR",
+                "Networking: WebSockets"
+            ],
+            "priority": "P1",
+            "resolution": "---",
+            "o1": "isempty"
+        }
+    }
 };
 NeckoTriage.prototype.init = function () {
     // Make sure we display the proper version info
@@ -20,7 +124,7 @@ NeckoTriage.prototype.init = function () {
     // Now load all the tables
     let self = this;
     $.each(this.availableTables, function (k, v) {
-        self.tables[k] = new BugTable(k, v["title"], v["url"], self);
+        self.tables[k] = new BugTable(k, v["title"], v["query"], self);
         self.tables[k].create();
     });
 };
@@ -30,15 +134,15 @@ NeckoTriage.prototype.reloadAll = function () {
     });
 };
 
-BugTable = function (id, title, url, triage) {
+BugTable = function (id, title, query, triage) {
     this.id = id;
     this.title = title;
-    this.url = url;
+    this.query = query;
     this.triage = triage;
 };
 BugTable.prototype.id = "";
 BugTable.prototype.title = "";
-BugTable.prototype.url = "";
+BugTable.prototype.query = {};
 BugTable.prototype.triage = null;
 BugTable.prototype.table = null;
 BugTable.prototype.errorContainer = null;
@@ -108,9 +212,15 @@ BugTable.prototype.enableReload = function () {
 BugTable.prototype.load = function () {
     //TODO
     //this.reloadSpan.disable();
-    $.getJSON(this.url).done($.proxy(this, "display"))
-                       .fail($.proxy(this, "xhrError"))
-                       .always($.proxy(this, "enableReload"));
+    // disable table, as well
+    // show spinner?
+    $.getJSON({url: "https://bugzilla.mozilla.org/rest/bug",
+               data: this.query, // TODO - auth param from triage
+               type: "GET",
+               traditional: true})
+             .done($.proxy(this, "display"))
+             .fail($.proxy(this, "xhrError"))
+             .always($.proxy(this, "enableReload"));
 };
 BugTable.prototype.create = function () {
     // Build up our DOM objects, and stick them in the appropriate container
