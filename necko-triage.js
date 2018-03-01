@@ -51,6 +51,12 @@ AppSettings.prototype.load = function () {
     if (strSettings) {
         this._settings = JSON.parse(strSettings);
     }
+
+    for (let i of this.FIELDS) {
+        if (this._settings.hasOwnProperty(i)) {
+            $("#" + i).val(this._settings[i]);
+        }
+    }
 };
 AppSettings.prototype.show = function () {
     this.dialog.dialog("open");
