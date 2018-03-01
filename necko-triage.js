@@ -1,5 +1,24 @@
 var triage = null;
 
+function GetNI(dataRow) {
+    let lastNI = undefined;
+    for (let flag of dataRow["flags"]) {
+        // TODO
+        if (flag["name"] == "needinfo") {
+            lastNI = flag["modification_date"];
+        }
+    }
+
+    if ($.type(lastNI) == "string") {
+        let tLocation = lastNI.indexOf("T");
+        if (tLocation != -1) {
+            lastNI = lastNI.substring(0, tLocation);
+        }
+    }
+
+    return lastNI;
+}
+
 AppSettings = function () {
     this.trigger = $("#settings-trigger");
     this.trigger.click($.proxy(this, "show"));
@@ -83,7 +102,8 @@ NeckoTriage.prototype.availableTables = {
             "n2": "1",
             "resolution": "---",
             "o2": "substring"
-        }
+        },
+        "extra_columns": {}
     },
     "untriaged-ni": {
         "title": "Untriaged bugs (awaiting ni?)",
@@ -109,7 +129,8 @@ NeckoTriage.prototype.availableTables = {
             "resolution": "---",
             "o1": "substring",
             "priority": "--"
-        }
+        },
+        "extra_columns": {"ni-date": {"title": "Last ni?", "data_selector": GetNI}}
     },
     "malformed": {
         "title": "Malformed bugs",
@@ -138,7 +159,8 @@ NeckoTriage.prototype.availableTables = {
             ],
             "priority": "--",
             "resolution": "---"
-        }
+        },
+        "extra_columns": {}
     },
     "p1-unassigned": {
         "title": "Unassigned P1 bugs",
@@ -161,7 +183,8 @@ NeckoTriage.prototype.availableTables = {
             "priority": "P1",
             "resolution": "---",
             "o1": "isempty"
-        }
+        },
+        "extra_columns": {}
     }
 };
 NeckoTriage.prototype.init = function () {
@@ -177,7 +200,7 @@ NeckoTriage.prototype.init = function () {
     // Now load all the tables
     let self = this;
     $.each(this.availableTables, function (k, v) {
-        self.tables[k] = new BugTable(k, v["title"], v["query"], self);
+        self.tables[k] = new BugTable(k, v, self);
         self.tables[k].create();
     });
 };
@@ -187,15 +210,17 @@ NeckoTriage.prototype.reloadAll = function () {
     });
 };
 
-BugTable = function (id, title, query, triage) {
+BugTable = function (id, config, triage) {
     this.id = id;
-    this.title = title;
-    this.query = query;
+    this.title = config["title"];
+    this.query = config["query"];
+    this.extraColumns = config["extra_columns"]
     this.triage = triage;
 };
 BugTable.prototype.id = "";
 BugTable.prototype.title = "";
 BugTable.prototype.query = {};
+BugTable.prototype.extraColumns = {};
 BugTable.prototype.triage = null;
 BugTable.prototype.table = null;
 BugTable.prototype.errorContainer = null;
@@ -234,22 +259,38 @@ BugTable.prototype.display = function (data) {
     let thr = $("<tr />", {id: "thead-tr-" + this.id});
     thr.append($("<th />", {text: "Bug ID", id: "thead-id-" + this.id}));
     thr.append($("<th />", {text: "Summary", id: "thead-summary-" + this.id}));
+    let self = this;
+    $.each(this.extraColumns, function (k, v) {
+        thr.append($("<th />", {text: v["title"], id: "thead-" + k + "-" + self.id}));
+    });
     thead.append(thr);
     table.append(thead);
 
     let tbody = $("<tbody />", {id: "tbody-" + this.id});
     $.each(data["bugs"], function (i, rowData) {
         let idPrefix = "tr-" + i + "-";
-        let tr = $("<tr />", {id: idPrefix + this.id});
+        let tr = $("<tr />", {id: idPrefix + self.id});
 
-        let idTd = $("<td />", {id: idPrefix + "id-" + this.id});
+        let idTd = $("<td />", {id: idPrefix + "id-" + self.id});
         let href = "https://bugzilla.mozilla.org/show_bug.cgi?id=" + rowData["id"];
-        let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + this.id});
+        let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id});
         idTd.append(link);
         tr.append(idTd);
 
-        let summaryTd = $("<td />", {text: rowData["summary"], id: idPrefix + "summary-" + this.id});
+        let summaryTd = $("<td />", {text: rowData["summary"], id: idPrefix + "summary-" + self.id});
         tr.append(summaryTd);
+
+        $.each(self.extraColumns, function (k, v) {
+            let text = "";
+            if (v.hasOwnProperty("data_selector")) {
+                text = v["data_selector"](rowData);
+            } else {
+                text = rowData[k];
+            }
+
+            let td = $("<td />", {text: text, id: idPrefix + k + "-" + self.id});
+            tr.append(td);
+        });
 
         tbody.append(tr);
     });
