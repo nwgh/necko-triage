@@ -78,7 +78,7 @@ AppSettings.prototype.get = function (key) {
 NeckoTriage = function () { };
 NeckoTriage.prototype.tables = {};
 NeckoTriage.prototype.rootElement = "#necko-triage-root";
-NeckoTriage.prototype.version = "0.0.1";
+NeckoTriage.prototype.version = "0.0.2";
 NeckoTriage.prototype.availableTables = {
     "untriaged-no-ni": {
         "title": "Untriaged bugs (without ni?)",
