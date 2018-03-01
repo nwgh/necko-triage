@@ -1,13 +1,59 @@
 var triage = null;
 
-function GetNI(dataRow) {
+function SortBySeverity(a, b) {
+    const SeverityMap = [
+        "blocker",
+        "critical",
+        "major",
+        "normal",
+        "minor",
+        "trivial",
+        "enhancement"
+    ];
+    let aSev = SeverityMap.indexOf(a["severity"]);
+    let bSev = SeverityMap.indexOf(b["severity"]);
+
+    return aSev - bSev;
+}
+
+function GetNIHelper(dataRow) {
     let lastNI = undefined;
     for (let flag of dataRow["flags"]) {
-        // TODO
         if (flag["name"] == "needinfo") {
             lastNI = flag["modification_date"];
         }
     }
+
+    return lastNI;
+}
+
+function SortByNI(a, b) {
+    let aNI = GetNIHelper(a);
+    let bNI = GetNIHelper(b);
+
+    if (a === undefined || b === undefined) {
+        // Use our default sort instead
+        return SortBySeverity(a, b);
+    }
+
+    let aDate = new Date(aNI);
+    let bDate = new Date(bNI);
+
+    // We want the oldest ones first
+    if (aDate < bDate) {
+        return -1;
+    }
+
+    if (bDate < aDate) {
+        return 1;
+    }
+
+    // Fall back to the default sort
+    return SortBySeverity(a, b);
+}
+
+function GetNI(dataRow) {
+    let lastNI = GetNIHelper(dataRow);
 
     if ($.type(lastNI) == "string") {
         let relativeLastNI = moment(lastNI).fromNow();
@@ -111,7 +157,8 @@ NeckoTriage.prototype.availableTables = {
             "resolution": "---",
             "o2": "substring"
         },
-        "extra_columns": {}
+        "extra_columns": {},
+        "row_sort": SortBySeverity
     },
     "untriaged-ni": {
         "title": "Untriaged bugs (awaiting ni?)",
@@ -138,7 +185,8 @@ NeckoTriage.prototype.availableTables = {
             "o1": "substring",
             "priority": "--"
         },
-        "extra_columns": {"ni-date": {"title": "Last ni?", "data_selector": GetNI}}
+        "extra_columns": {"ni-date": {"title": "Last ni?", "data_selector": GetNI}},
+        "row_sort": SortByNI
     },
     "malformed": {
         "title": "Malformed bugs",
@@ -168,7 +216,8 @@ NeckoTriage.prototype.availableTables = {
             "priority": "--",
             "resolution": "---"
         },
-        "extra_columns": {}
+        "extra_columns": {},
+        "row_sort": SortBySeverity
     },
     "p1-unassigned": {
         "title": "Unassigned P1 bugs",
@@ -192,7 +241,8 @@ NeckoTriage.prototype.availableTables = {
             "resolution": "---",
             "o1": "isempty"
         },
-        "extra_columns": {}
+        "extra_columns": {},
+        "row_sort": SortBySeverity
     }
 };
 NeckoTriage.prototype.init = function () {
@@ -223,12 +273,14 @@ BugTable = function (id, config, triage) {
     this.title = config["title"];
     this.query = config["query"];
     this.extraColumns = config["extra_columns"]
+    this.rowSort = config["row_sort"];
     this.triage = triage;
 };
 BugTable.prototype.id = "";
 BugTable.prototype.title = "";
 BugTable.prototype.query = {};
 BugTable.prototype.extraColumns = {};
+BugTable.prototype.rowSort = null;
 BugTable.prototype.triage = null;
 BugTable.prototype.table = null;
 BugTable.prototype.errorContainer = null;
@@ -266,6 +318,7 @@ BugTable.prototype.display = function (data) {
     let thead = $("<thead />", {id: "thead-" + this.id, "class": "bug-table-head"});
     let thr = $("<tr />", {id: "thead-tr-" + this.id, "class": "bug-table-row"});
     thr.append($("<th />", {text: "Bug ID", id: "thead-id-" + this.id, "class": "bug-id"}));
+    thr.append($("<th />", {text: "Severity", id: "thead-severity-" + this.id, "class": "bug-severity"}));
     thr.append($("<th />", {text: "Summary", id: "thead-summary-" + this.id, "class": "bug-summary"}));
     let self = this;
     $.each(this.extraColumns, function (k, v) {
@@ -273,6 +326,10 @@ BugTable.prototype.display = function (data) {
     });
     thead.append(thr);
     table.append(thead);
+
+    if (this.rowSort) {
+        data["bugs"].sort(this.rowSort);
+    }
 
     let tbody = $("<tbody />", {id: "tbody-" + this.id, "class": "bug-table-body"});
     $.each(data["bugs"], function (i, rowData) {
@@ -285,19 +342,22 @@ BugTable.prototype.display = function (data) {
         idTd.append(link);
         tr.append(idTd);
 
+        let severityTd = $("<td />", {text: rowData["severity"], id: idPrefix + "severity-" + self.id, "class": "bug-severity"});
+        tr.append(severityTd);
+
         let summaryTd = $("<td />", {text: rowData["summary"], id: idPrefix + "summary-" + self.id, "class": "bug-summary"});
         tr.append(summaryTd);
 
         $.each(self.extraColumns, function (k, v) {
             let td = $("<td />", {id: idPrefix + k + "-" + self.id, "class": "bug-" + k});
             if (v.hasOwnProperty("data_selector")) {
-                let data = v["data_selector"](rowData);
-                if ($.type(data) == "object") {
+                let rowInfo = v["data_selector"](rowData);
+                if ($.type(rowInfo) == "object") {
                     // Selector returned a created element, put it in our td.
-                    td.append(data);
+                    td.append(rowInfo);
                 } else {
                     // Selector returned some plain text
-                    td.text(data);
+                    td.text(rowInfo);
                 }
             } else {
                 td.text(rowData[k]);
