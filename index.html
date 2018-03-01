@@ -4,19 +4,28 @@
         <title>Necko Triage Helper</title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="necko-triage.css" />
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+        <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="necko-triage.js"></script>
     </head>
     <body>
-        <div id="notes">
-            <a href="https://public.etherpad-mozilla.org/p/necko-triage-guide">Necko Triage Guide</a>
-            <br>
-            <a href="https://public.etherpad-mozilla.org/p/necko-meeting">Necko Meeting Notes</a>
-        </div>
+        <ul id="menu">
+            <li><div>Menu</div>
+                <ul>
+                    <li><a href="https://public.etherpad-mozilla.org/p/necko-triage-guide" target="_blank">Necko Triage Guide</a></li>
+                    <li><a href="https://public.etherpad-mozilla.org/p/necko-meeting" target="_blank">Necko Meeting Notes</a></li>
+                    <li id="settings-trigger"><a>Settings</a></li>
+                </ul>
+            </li>
+        </ul>
         <div id="necko-triage-root"></div>
         <div id="footer">
             necko-triage v<span id="necko-triage-version"></span>
             <a href="https://github.com/nwgh/necko-triage">(Source)</a>
+        </div>
+        <div id="settings-dialog" class="settings-dialog" title="Settings">
+            <label for="bz-apikey">API Key <input type="text" name="bz-apikey" id="bz-apikey"></label>
         </div>
     </body>
 </html>

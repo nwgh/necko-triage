@@ -1,5 +1,55 @@
 var triage = null;
 
+AppSettings = function () {
+    this.trigger = $("#settings-trigger");
+    this.trigger.click($.proxy(this, "show"));
+    let self = this;
+    this.dialog = $("#settings-dialog").dialog({
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            Close: function () {
+                self.dialog.dialog("close");
+            }
+        },
+        close: function () {
+            for (let i in this.FIELDS) {
+                this._settings[i] = $("#" + i).value();
+            }
+            self.close();
+        }
+    });
+
+    this.load();
+};
+AppSettings.prototype.FIELDS = ["bz-apikey"];
+AppSettings.prototype._settings = {};
+AppSettings.prototype.load = function () {
+    // TODO - read stuff from localStorage
+    let strSettings = window.localStorage.getItem("settings");
+    if (strSettings) {
+        this._settings = JSON.parse(strSettings);
+    }
+};
+AppSettings.prototype.show = function () {
+    this.dialog.dialog("open");
+};
+AppSettings.prototype.close = function () {
+    for (let i of this.FIELDS) {
+        this._settings[i] = $("#" + i).val();
+    }
+    window.localStorage.setItem("settings", JSON.stringify(this._settings));
+};
+AppSettings.prototype.get = function (key) {
+    if (this._settings.hasOwnProperty(key)) {
+        return this._settings[key];
+    }
+
+    return undefined;
+};
+
 NeckoTriage = function () { };
 NeckoTriage.prototype.tables = {};
 NeckoTriage.prototype.rootElement = "#necko-triage-root";
@@ -121,6 +171,9 @@ NeckoTriage.prototype.init = function () {
     // Give ourselves a handle to the element, not just its id
     this.rootElement = $(this.rootElement);
 
+    this.settings = new AppSettings();
+    $("#menu").menu();
+
     // Now load all the tables
     let self = this;
     $.each(this.availableTables, function (k, v) {
@@ -214,8 +267,13 @@ BugTable.prototype.load = function () {
     //this.reloadSpan.disable();
     // disable table, as well
     // show spinner?
+    let apiKey = this.triage.settings.get("bz-apikey");
+    let query = $.extend({}, this.query);
+    if (apiKey) {
+        $.extend(query, {"api_key": apiKey});
+    }
     $.getJSON({url: "https://bugzilla.mozilla.org/rest/bug",
-               data: this.query, // TODO - auth param from triage
+               data: query,
                type: "GET",
                traditional: true})
              .done($.proxy(this, "display"))

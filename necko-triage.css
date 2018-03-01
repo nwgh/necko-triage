@@ -17,3 +17,15 @@
 th {
     text-align: left;
 }
+
+#settings-trigger {
+    text-decoration: underline;
+}
+
+.settings-dialog {
+    display: none;
+}
+
+.ui-menu {
+    width: 200px;
+}
