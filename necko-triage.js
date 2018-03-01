@@ -10,10 +10,12 @@ function GetNI(dataRow) {
     }
 
     if ($.type(lastNI) == "string") {
-        let tLocation = lastNI.indexOf("T");
-        if (tLocation != -1) {
-            lastNI = lastNI.substring(0, tLocation);
-        }
+        let relativeLastNI = moment(lastNI).fromNow();
+        let span = $("<span />", {title: lastNI, text: relativeLastNI});
+        span.tooltip();
+        lastNI = span;
+    } else {
+        lastNI = "unknown";
     }
 
     return lastNI;
@@ -287,14 +289,20 @@ BugTable.prototype.display = function (data) {
         tr.append(summaryTd);
 
         $.each(self.extraColumns, function (k, v) {
-            let text = "";
+            let td = $("<td />", {id: idPrefix + k + "-" + self.id, "class": "bug-" + k});
             if (v.hasOwnProperty("data_selector")) {
-                text = v["data_selector"](rowData);
+                let data = v["data_selector"](rowData);
+                if ($.type(data) == "object") {
+                    // Selector returned a created element, put it in our td.
+                    td.append(data);
+                } else {
+                    // Selector returned some plain text
+                    td.text(data);
+                }
             } else {
-                text = rowData[k];
+                td.text(rowData[k]);
             }
 
-            let td = $("<td />", {text: text, id: idPrefix + k + "-" + self.id, "class": "bug-" + k});
             tr.append(td);
         });
 
