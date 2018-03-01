@@ -260,30 +260,30 @@ BugTable.prototype.display = function (data) {
         return;
     }
 
-    let table = $("<table />", {id: this.id});
-    let thead = $("<thead />", {id: "thead-" + this.id});
-    let thr = $("<tr />", {id: "thead-tr-" + this.id});
-    thr.append($("<th />", {text: "Bug ID", id: "thead-id-" + this.id}));
-    thr.append($("<th />", {text: "Summary", id: "thead-summary-" + this.id}));
+    let table = $("<table />", {id: this.id, "class": "bug-table"});
+    let thead = $("<thead />", {id: "thead-" + this.id, "class": "bug-table-head"});
+    let thr = $("<tr />", {id: "thead-tr-" + this.id, "class": "bug-table-row"});
+    thr.append($("<th />", {text: "Bug ID", id: "thead-id-" + this.id, "class": "bug-id"}));
+    thr.append($("<th />", {text: "Summary", id: "thead-summary-" + this.id, "class": "bug-summary"}));
     let self = this;
     $.each(this.extraColumns, function (k, v) {
-        thr.append($("<th />", {text: v["title"], id: "thead-" + k + "-" + self.id}));
+        thr.append($("<th />", {text: v["title"], id: "thead-" + k + "-" + self.id, "class": "bug-" + k}));
     });
     thead.append(thr);
     table.append(thead);
 
-    let tbody = $("<tbody />", {id: "tbody-" + this.id});
+    let tbody = $("<tbody />", {id: "tbody-" + this.id, "class": "bug-table-body"});
     $.each(data["bugs"], function (i, rowData) {
         let idPrefix = "tr-" + i + "-";
-        let tr = $("<tr />", {id: idPrefix + self.id});
+        let tr = $("<tr />", {id: idPrefix + self.id, "class": "bug-table-row"});
 
-        let idTd = $("<td />", {id: idPrefix + "id-" + self.id});
+        let idTd = $("<td />", {id: idPrefix + "id-" + self.id, "class": "bug-id"});
         let href = "https://bugzilla.mozilla.org/show_bug.cgi?id=" + rowData["id"];
         let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id});
         idTd.append(link);
         tr.append(idTd);
 
-        let summaryTd = $("<td />", {text: rowData["summary"], id: idPrefix + "summary-" + self.id});
+        let summaryTd = $("<td />", {text: rowData["summary"], id: idPrefix + "summary-" + self.id, "class": "bug-summary"});
         tr.append(summaryTd);
 
         $.each(self.extraColumns, function (k, v) {
@@ -294,7 +294,7 @@ BugTable.prototype.display = function (data) {
                 text = rowData[k];
             }
 
-            let td = $("<td />", {text: text, id: idPrefix + k + "-" + self.id});
+            let td = $("<td />", {text: text, id: idPrefix + k + "-" + self.id, "class": "bug-" + k});
             tr.append(td);
         });
 
