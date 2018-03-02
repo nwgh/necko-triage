@@ -6,6 +6,7 @@ body {
     font-size: small;
     font-weight: lighter;
     font-style: italic;
+    margin-top: 1em;
 }
 
 .bug-container {
