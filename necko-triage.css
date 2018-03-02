@@ -23,6 +23,11 @@ body {
     cursor: pointer;
 }
 
+.loading {
+    opacity: 0.33;
+    cursor: not-allowed;
+}
+
 .bug-table-body>.bug-table-row>td {
     border-top: thin solid;
 }

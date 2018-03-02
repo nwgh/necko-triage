@@ -415,15 +415,23 @@ BugTable.prototype.display = function (data) {
 
     this.table.append(table);
 };
-BugTable.prototype.enableReload = function () {
-    // TODO
-    //this.reloadSpan.enable();
+BugTable.prototype.enableFunctionality = function () {
+    this.table.removeClass("loading");
+    this.table.off("click");
+
+    this.reloadSpan.removeClass("loading");
+    this.reloadSpan.click($.proxy(this, "load"));
+};
+BugTable.prototype.disableFunctionality = function () {
+    this.reloadSpan.click(function (e) {e.preventDefault();});
+    this.reloadSpan.addClass("loading");
+
+    this.table.click(function (e) {e.preventDefault();});
+    this.table.addClass("loading");
 };
 BugTable.prototype.load = function () {
-    //TODO
-    //this.reloadSpan.disable();
-    // disable table, as well
-    // show spinner?
+    this.disableFunctionality();
+
     let apiKey = this.triage.settings.get("bz-apikey");
     let query = $.extend({}, this.query);
     if (apiKey) {
@@ -435,7 +443,7 @@ BugTable.prototype.load = function () {
                traditional: true})
              .done($.proxy(this, "display"))
              .fail($.proxy(this, "xhrError"))
-             .always($.proxy(this, "enableReload"));
+             .always($.proxy(this, "enableFunctionality"));
 };
 BugTable.prototype.create = function () {
     // Build up our DOM objects, and stick them in the appropriate container
