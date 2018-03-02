@@ -8,6 +8,10 @@ body {
     font-style: italic;
 }
 
+.bug-container {
+    margin-top: 2em;
+}
+
 .bug-table-title {
     font-size: large;
     font-weight: bold;
@@ -35,5 +39,5 @@ a {
 }
 
 .ui-menu {
-    width: 200px;
+    width: 15em;
 }

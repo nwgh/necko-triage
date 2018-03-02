@@ -68,8 +68,8 @@ function GetNI(dataRow) {
 }
 
 AppSettings = function () {
-    this.trigger = $("#settings-trigger");
-    this.trigger.click($.proxy(this, "show"));
+    let trigger = $("#settings-trigger");
+    trigger.click($.proxy(this, "show"));
     let self = this;
     this.dialog = $("#settings-dialog").dialog({
         autoOpen: false,
@@ -254,6 +254,7 @@ NeckoTriage.prototype.init = function () {
 
     this.settings = new AppSettings();
     $("#menu").menu();
+    $("#reload-all").click($.proxy(this, "reloadAll"));
 
     // Now load all the tables
     let self = this;
@@ -284,7 +285,7 @@ BugTable.prototype.rowSort = null;
 BugTable.prototype.triage = null;
 BugTable.prototype.table = null;
 BugTable.prototype.errorContainer = null;
-BugTable.prototype.reloadSpan = null;
+BugTable.prototype.reloadButton = null;
 BugTable.prototype.showError = function () {
     this.errorContainer.text("Error loading bugs. Data may be stale.");
     this.errorContainer.show();
@@ -301,15 +302,13 @@ BugTable.prototype.displayError = function (error) {
 BugTable.prototype.display = function (data) {
     this.errorContainer.hide();
 
-    /* TODO - this doesn't work
-    let oldTable = $(this.id);
+    let oldTable = this.table.children(".bug-table");
     if (oldTable) {
         oldTable.remove();
     }
-    */
 
     if (data["bugs"].length == 0) {
-        let div = $("<div />", {id: this.id, text: "Zarro Boogs!"});
+        let div = $("<div />", {id: this.id, text: "Zarro Boogs!", "class": "bug-table"});
         this.table.append(div);
         return;
     }
@@ -375,11 +374,11 @@ BugTable.prototype.display = function (data) {
 };
 BugTable.prototype.enableReload = function () {
     // TODO
-    //this.reloadSpan.enable();
+    //this.reloadButton.enable();
 };
 BugTable.prototype.load = function () {
     //TODO
-    //this.reloadSpan.disable();
+    //this.reloadButton.disable();
     // disable table, as well
     // show spinner?
     let apiKey = this.triage.settings.get("bz-apikey");
@@ -397,16 +396,20 @@ BugTable.prototype.load = function () {
 };
 BugTable.prototype.create = function () {
     // Build up our DOM objects, and stick them in the appropriate container
-    let rootContainer = $("<div />", {"id": "bug-container-" + this.id});
+    let rootContainer = $("<div />", {"id": "bug-container-" + this.id, "class": "bug-container"});
 
-    let title = $("<h1 />", {text: this.title, "class": "bug-table-title"});
-    rootContainer.append(title);
+    let titleWrapper = $("<div />");
+    let title = $("<span />", {text: this.title, "class": "bug-table-title"});
+    titleWrapper.append(title);
 
-    /* TODO - this doesn't work
-    this.reloadSpan = $("<span>Reload</span>");
-    this.reloadSpan.click($.proxy(this, "load"));
-    rootContainer.append(this.reloadSpan);
-    */
+    this.reloadButton = $("<button />", {title: "Reload Table", "class": "ui-button ui-widget ui-corner-all ui-button-icon-only"});
+    this.reloadButton.click($.proxy(this, "load"));
+
+    let reloadSpan = $("<span />", {"class": "ui-icon ui-icon-arrowrefresh-1-e"});
+    this.reloadButton.append(reloadSpan)
+
+    titleWrapper.append(this.reloadButton);
+    rootContainer.append(titleWrapper);
 
     this.errorContainer = $("<div />", {"class": "bug-error"});
     rootContainer.append(this.errorContainer);
