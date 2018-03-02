@@ -19,6 +19,10 @@ body {
     margin-bottom: 0;
 }
 
+.reload-button {
+    cursor: pointer;
+}
+
 .bug-table-body>.bug-table-row>td {
     border-top: thin solid;
 }

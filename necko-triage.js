@@ -314,7 +314,7 @@ BugTable.prototype.rowSort = null;
 BugTable.prototype.triage = null;
 BugTable.prototype.table = null;
 BugTable.prototype.errorContainer = null;
-BugTable.prototype.reloadButton = null;
+BugTable.prototype.reloadSpan = null;
 BugTable.prototype.showError = function () {
     this.errorContainer.text("Error loading bugs. Data may be stale.");
     this.errorContainer.show();
@@ -417,11 +417,11 @@ BugTable.prototype.display = function (data) {
 };
 BugTable.prototype.enableReload = function () {
     // TODO
-    //this.reloadButton.enable();
+    //this.reloadSpan.enable();
 };
 BugTable.prototype.load = function () {
     //TODO
-    //this.reloadButton.disable();
+    //this.reloadSpan.disable();
     // disable table, as well
     // show spinner?
     let apiKey = this.triage.settings.get("bz-apikey");
@@ -445,13 +445,10 @@ BugTable.prototype.create = function () {
     let title = $("<span />", {text: this.title, "class": "bug-table-title"});
     titleWrapper.append(title);
 
-    this.reloadButton = $("<button />", {title: "Reload Table", "class": "ui-button ui-widget ui-corner-all ui-button-icon-only"});
-    this.reloadButton.click($.proxy(this, "load"));
+    this.reloadSpan = $("<span />", {"class": "reload-button ui-icon ui-icon-arrowrefresh-1-e", title: "Reload Table"});
+    this.reloadSpan.click($.proxy(this, "load"));
 
-    let reloadSpan = $("<span />", {"class": "ui-icon ui-icon-arrowrefresh-1-e"});
-    this.reloadButton.append(reloadSpan)
-
-    titleWrapper.append(this.reloadButton);
+    titleWrapper.append(this.reloadSpan);
     rootContainer.append(titleWrapper);
 
     this.errorContainer = $("<div />", {"class": "bug-error"});
