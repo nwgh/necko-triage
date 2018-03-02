@@ -92,6 +92,7 @@ AppSettings = function () {
     this.load();
 };
 AppSettings.prototype.FIELDS = ["bz-apikey"];
+AppSettings.prototype.CHECKBOXES = ["open-bugs-in-new-window"];
 AppSettings.prototype._settings = {};
 AppSettings.prototype.load = function () {
     // TODO - read stuff from localStorage
@@ -103,6 +104,16 @@ AppSettings.prototype.load = function () {
     for (let i of this.FIELDS) {
         if (this._settings.hasOwnProperty(i)) {
             $("#" + i).val(this._settings[i]);
+        } else {
+            this._settings[i] = "";
+        }
+    }
+
+    for (let i of this.CHECKBOXES) {
+        if (this._settings.hasOwnProperty(i)) {
+            document.getElementById(i).checked = this._settings[i];
+        } else {
+            this._settings[i] = document.getElementById(i).checked;
         }
     }
 };
@@ -110,10 +121,28 @@ AppSettings.prototype.show = function () {
     this.dialog.dialog("open");
 };
 AppSettings.prototype.close = function () {
+    let anySettingChanged = false;
+
     for (let i of this.FIELDS) {
-        this._settings[i] = $("#" + i).val();
+        let newVal = $("#" + i).val();
+        if (newVal != this._settings[i]) {
+            anySettingChanged = true;
+        }
+        this._settings[i] = newVal;
     }
-    window.localStorage.setItem("settings", JSON.stringify(this._settings));
+
+    for (let i of this.CHECKBOXES) {
+        let newVal = document.getElementById(i).checked;
+        if (newVal != this._settings[i]) {
+            anySettingChanged = true;
+        }
+        this._settings[i] = newVal;
+    }
+
+    if (anySettingChanged) {
+        window.localStorage.setItem("settings", JSON.stringify(this._settings));
+        triage.reloadAll();
+    }
 };
 AppSettings.prototype.get = function (key) {
     if (this._settings.hasOwnProperty(key)) {
@@ -349,6 +378,9 @@ BugTable.prototype.display = function (data) {
         idTd.append(iconSpan);
         let href = "https://bugzilla.mozilla.org/show_bug.cgi?id=" + rowData["id"];
         let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id});
+        if (self.triage.settings.get("open-bugs-in-new-window")) {
+            link.attr("target", "_blank");
+        }
         idTd.append(link);
         tr.append(idTd);
 
