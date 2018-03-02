@@ -335,7 +335,18 @@ BugTable.prototype.display = function (data) {
         let idPrefix = "tr-" + i + "-";
         let tr = $("<tr />", {id: idPrefix + self.id, "class": "bug-table-row"});
 
+        let icon = "ui-icon-blank";
+        for (let group of rowData["groups"]) {
+            // NWGH - there may be other groups here that should be called out
+            // but for now, these are the only ones I know about.
+            if (group == "network-core-security" ||
+                group == "core-security") {
+                icon = "ui-icon-locked";
+            }
+        }
         let idTd = $("<td />", {id: idPrefix + "id-" + self.id, "class": "bug-id"});
+        let iconSpan = $("<span />", {"class": "ui-icon " + icon});
+        idTd.append(iconSpan);
         let href = "https://bugzilla.mozilla.org/show_bug.cgi?id=" + rowData["id"];
         let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id});
         idTd.append(link);

@@ -27,6 +27,10 @@ body {
     display: none;
 }
 
+.bug-id {
+    min-width: 8em;
+}
+
 th {
     text-align: left;
 }
