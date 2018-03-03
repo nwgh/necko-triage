@@ -71,21 +71,45 @@ AppSettings = function () {
     let trigger = $("#settings-trigger");
     trigger.click($.proxy(this, "show"));
     let self = this;
-    this.dialog = $("#settings-dialog").dialog({
+    this.settingsDialog = $("#settings-dialog").dialog({
         autoOpen: false,
-        height: 400,
-        width: 350,
+        width: 400,
         modal: true,
         buttons: {
             Close: function () {
-                self.dialog.dialog("close");
+                self.settingsDialog.dialog("close");
             }
         },
         close: function () {
-            for (let i in this.FIELDS) {
-                this._settings[i] = $("#" + i).value();
-            }
             self.close();
+        }
+    });
+
+    $("#custom-query-add-trigger").click($.proxy(this, "showCQAdd"));
+    this.customQueryAddDialog = $("#custom-query-add").dialog({
+        autoOpen: false,
+        width: 375,
+        modal: true,
+        buttons: {
+            Cancel: function () {
+                self.closeCustomQueryAdd();
+            },
+            Save: function () {
+                self.saveCustomQueryAdd();
+            }
+        }
+    });
+
+    let customQueriesHelp = $("#custom-queries-help-trigger");
+    customQueriesHelp.click($.proxy(this, "showCQHelp"));
+    this.customQueriesHelpDialog = $("#custom-queries-help").dialog({
+        autoOpen: false,
+        width: 350,
+        modal: true,
+        buttons: {
+            Ok: function () {
+                self.customQueriesHelpDialog.dialog("close");
+            }
         }
     });
 
@@ -94,8 +118,8 @@ AppSettings = function () {
 AppSettings.prototype.FIELDS = ["bz-apikey"];
 AppSettings.prototype.CHECKBOXES = ["open-bugs-in-new-window"];
 AppSettings.prototype._settings = {};
+AppSettings.prototype.oldCustomQueries = null;
 AppSettings.prototype.load = function () {
-    // TODO - read stuff from localStorage
     let strSettings = window.localStorage.getItem("settings");
     if (strSettings) {
         this._settings = JSON.parse(strSettings);
@@ -116,9 +140,125 @@ AppSettings.prototype.load = function () {
             this._settings[i] = document.getElementById(i).checked;
         }
     }
+
+    if (this._settings.hasOwnProperty("custom-queries")) {
+        let self = this;
+        $.each(this._settings["custom-queries"], function (i, query) {
+            self.displayCustomQuery(i, query);
+        });
+    } else {
+        this._settings["custom-queries"] = [];
+    }
+};
+AppSettings.prototype.displayCustomQuery = function (i, query) {
+    let rootElement = $("#custom-queries-wrapper");
+    let div = $("<div />", {id: "custom-query-setting-" + i, text: query["title"], "class": "custom-query-setting"});
+    let button = $("<button />", {title: "Remove Query", "class": "query-remove ui-button ui-widget ui-corner-all ui-button-icon-only"});
+    button.click($.proxy(this, "removeQuery", i));
+    let span = $("<span />", {"class": "ui-icon ui-icon-minus"});
+    button.append(span);
+    div.append(button);
+    rootElement.append(div);
+};
+AppSettings.prototype.closeCustomQueryAdd = function () {
+    // Clear out the input fields for next time
+    $("#query-title").val("");
+    $("#query-url").val("");
+
+    this.customQueryAddDialog.dialog("close");
+};
+AppSettings.prototype.showError = function (message) {
+    $("<div />", {title: "Error", text: message}).dialog({
+        modal: true,
+        width: 325
+    });
+};
+AppSettings.prototype.saveCustomQueryAdd = function () {
+    let queryTitle = $.trim($("#query-title").val());
+    if (queryTitle == "") {
+        this.showError("Title can't be empty!");
+        return;
+    }
+    for (let query of this._settings["custom-queries"]) {
+        if (queryTitle == query["title"]) {
+            this.showError("Query '" + queryTitle + "' already exists!");
+            return;
+        }
+    }
+
+    let queryURL = $.trim($("#query-url").val());
+    if (queryURL == "") {
+        this.showError("URL can't be empty!");
+        return;
+    }
+
+    let parsedURL = URI(queryURL);
+    if (parsedURL.origin() != "https://bugzilla.mozilla.org") {
+        this.showError("URL is not from BMO!");
+        return;
+    }
+    if (parsedURL.path() != "/buglist.cgi" &&
+        parsedURL.path() != "/query.cgi") {
+        this.showError("URL does not appear to be search results!");
+        return;
+    }
+
+    let query = parsedURL.query(true);
+    if (query.hasOwnProperty("list_id")) {
+        delete query.list_id;
+    }
+    if (query.hasOwnProperty("query_format")) {
+        delete query.query_format;
+    }
+
+    if (!this.oldCustomQueries) {
+        this.oldCustomQueries = Array.from(this._settings["custom-queries"]);
+    }
+    let newQuery = {"title": queryTitle, "query": query};
+    let i = this._settings["custom-queries"].length;
+    this._settings["custom-queries"].push(newQuery);
+    this.displayCustomQuery(i, newQuery);
+
+    this.closeCustomQueryAdd();
+};
+AppSettings.prototype.removeQuery = function (index) {
+    let currentLength = this._settings["custom-queries"].length;
+    if (index >= currentLength) {
+        console.log("removeQuery: index too big?!");
+        return;
+    }
+    if (index < 0) {
+        console.log("removeQuery: index too small?!");
+        return;
+    }
+
+    if (!this.oldCustomQueries) {
+        this.oldCustomQueries = Array.from(this._settings["custom-queries"]);
+    }
+
+    this._settings["custom-queries"].splice(index, 1);
+    $("#custom-query-setting-" + index).remove();
+
+    if (index != (currentLength - 1)) {
+        // Need to adjust the indices, because we removed from somewhere in
+        // the middle of the list.
+        let queries = document.getElementsByClassName("custom-query-setting");
+        for (let i = 0; i < queries.length; i++) {
+            queries[i].id = "custom-query-setting-" + i;
+            let button = $(queries[i]).children("button");
+            button.off("click");
+            button.click($.proxy(this, "removeQuery", i));
+        }
+    }
 };
 AppSettings.prototype.show = function () {
-    this.dialog.dialog("open");
+    this.settingsDialog.dialog("open");
+};
+AppSettings.prototype.showCQHelp = function () {
+    this.customQueriesHelpDialog.dialog("open");
+};
+AppSettings.prototype.showCQAdd = function () {
+    this.customQueryAddDialog.dialog("open");
 };
 AppSettings.prototype.close = function () {
     let anySettingChanged = false;
@@ -139,9 +279,15 @@ AppSettings.prototype.close = function () {
         this._settings[i] = newVal;
     }
 
+    let resetUserTables = false;
+    if (this.oldCustomQueries) {
+        anySettingChanged = true;
+        resetUserTables = true;
+    }
+
     if (anySettingChanged) {
         window.localStorage.setItem("settings", JSON.stringify(this._settings));
-        triage.reloadAll();
+        triage.reloadAll(resetUserTables);
     }
 };
 AppSettings.prototype.get = function (key) {
@@ -158,6 +304,7 @@ NeckoTriage.prototype.rootElement = "#necko-triage-root";
 NeckoTriage.prototype.version = "0.0.4";
 NeckoTriage.prototype.availableTables = {
     "untriaged-no-ni": {
+        "is_user": false,
         "title": "Untriaged bugs (without ni?)",
         "query": {
             "f0": "OP",
@@ -190,6 +337,7 @@ NeckoTriage.prototype.availableTables = {
         "row_sort": SortBySeverity
     },
     "untriaged-ni": {
+        "is_user": false,
         "title": "Untriaged bugs (awaiting ni?)",
         "query": {
             "status_whiteboard": "\\[necko-triaged\\]",
@@ -218,6 +366,7 @@ NeckoTriage.prototype.availableTables = {
         "row_sort": SortByNI
     },
     "malformed": {
+        "is_user": false,
         "title": "Malformed bugs",
         "query": {
             "status_whiteboard_type": "regexp",
@@ -249,6 +398,7 @@ NeckoTriage.prototype.availableTables = {
         "row_sort": SortBySeverity
     },
     "p1-unassigned": {
+        "is_user": false,
         "title": "Unassigned P1 bugs",
         "query": {
             "f1": "assigned_to",
@@ -283,7 +433,7 @@ NeckoTriage.prototype.init = function () {
 
     this.settings = new AppSettings();
     $("#menu").menu();
-    $("#reload-all").click($.proxy(this, "reloadAll"));
+    $("#reload-all").click($.proxy(this, "reloadAll", false));
 
     // Now load all the tables
     let self = this;
@@ -291,11 +441,46 @@ NeckoTriage.prototype.init = function () {
         self.tables[k] = new BugTable(k, v, self);
         self.tables[k].create();
     });
+
+    this.createUserTables();
 };
-NeckoTriage.prototype.reloadAll = function () {
+NeckoTriage.prototype.reloadAll = function (resetUserTables) {
+    if (resetUserTables) {
+        $(".user-table").remove();
+
+        let newTables = {};
+        $.each(this.tables, function (k, table) {
+            if (!table.isUser) {
+                newTables[k] = table;
+            }
+        });
+        this.tables = newTables;
+    }
+
     $.each(this.tables, function (k, table) {
         table.load();
     });
+
+    if (resetUserTables) {
+        this.createUserTables();
+    }
+};
+NeckoTriage.prototype.createUserTables = function () {
+    let customQueries = this.settings.get("custom-queries");
+    let self = this;
+    $.each(customQueries, function (i, customQuery) {
+        self.createUserTable(i, customQuery);
+    });
+};
+NeckoTriage.prototype.createUserTable = function (index, customQuery) {
+    let queryConfig = $.extend({}, customQuery);
+    queryConfig["extra_columns"] = [];
+    queryConfig["row_sort"] = SortBySeverity;
+    queryConfig["is_user"] = true;
+
+    let tableID = "user-query-" + index;
+    this.tables[tableID] = new BugTable(tableID, queryConfig, this);
+    this.tables[tableID].create();
 };
 
 BugTable = function (id, config, triage) {
@@ -304,6 +489,7 @@ BugTable = function (id, config, triage) {
     this.query = config["query"];
     this.extraColumns = config["extra_columns"]
     this.rowSort = config["row_sort"];
+    this.isUser = config["is_user"];
     this.triage = triage;
 };
 BugTable.prototype.id = "";
@@ -447,7 +633,11 @@ BugTable.prototype.load = function () {
 };
 BugTable.prototype.create = function () {
     // Build up our DOM objects, and stick them in the appropriate container
-    let rootContainer = $("<div />", {"id": "bug-container-" + this.id, "class": "bug-container"});
+    let classString = "bug-container";
+    if (this.isUser) {
+        classString += " user-table";
+    }
+    let rootContainer = $("<div />", {"id": "bug-container-" + this.id, "class": classString});
 
     let titleWrapper = $("<div />");
     let title = $("<span />", {text: this.title, "class": "bug-table-title"});

@@ -8,6 +8,7 @@
         <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.19.1/URI.js"></script>
         <script src="necko-triage.js"></script>
     </head>
     <body>
@@ -22,15 +23,51 @@
             </li>
         </ul>
         <div id="necko-triage-root"></div>
-        <div id="footer">
+        <div id="footer" class="footer">
             necko-triage v<span id="necko-triage-version"></span>
             <a href="https://github.com/nwgh/necko-triage">(Source)</a>
         </div>
-        <div id="settings-dialog" class="settings-dialog" title="Settings">
+        <div id="settings-dialog" class="modal-dialog" title="Settings">
             <label for="bz-apikey">API Key <input type="password" name="bz-apikey" id="bz-apikey"></label>
-            <div>
+            <div class="dialog-element">
                 <label for="open-bugs-in-new-window">Open Bugs in New Window</label>
                 <input type="checkbox" name="open-bugs-in-new-window" id="open-bugs-in-new-window" checked>
+            </div>
+            <fieldset class="dialog-element">
+                <legend>Custom Queries
+                    <button id="custom-query-add-trigger" class="ui-button ui-widget ui-corner-all ui-button-icon-only" title="Add Custom Query">
+                        <span class="ui-icon ui-icon-plus"></span>
+                    </button>
+                </legend>
+                <div id="custom-queries-wrapper"></div>
+            </fieldset>
+        </div>
+        <div id="custom-queries-help" class="modal-dialog" title="Custom Queries">
+            <p>
+                First, pick a name for your query. Make it descriptive, like
+                "Untriaged bugs reported by me". (Hint: something like "Custom
+                Query 1" probably won't help you remember what you're looking at
+                later!). Put that in the "Name" box.
+            </p>
+            <p>
+                Next, go to the
+                <a href="https://bugzilla.mozilla.org/query.cgi" target="_blank">Bugzilla search page</a>
+                and perform your search. Once you've done that, copy the URL of the
+                the results page and paste it into the "Bugzilla URL" box.
+            </p>
+            <p>
+                Finally, click "Save". That's it!
+            </p>
+        </div>
+        <div id="custom-query-add" class="modal-dialog" title="Add Custom Query">
+            <div>
+                <label for="query-title">Name <input type="text" name="query-title" id="query-title"></label>
+            </div>
+            <div class="dialog-element">
+                <label for="query-url">Bugzilla URL <input type="text" name="query-url" id="query-url"></label>
+            </div>
+            <div class="dialog-element footer">
+                <span id="custom-queries-help-trigger" class="help-link">How do I do this?</span>
             </div>
         </div>
     </body>
