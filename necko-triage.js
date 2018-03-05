@@ -116,7 +116,7 @@ AppSettings = function () {
     this.load();
 };
 AppSettings.prototype.FIELDS = ["bz-apikey"];
-AppSettings.prototype.CHECKBOXES = ["open-bugs-in-new-window"];
+AppSettings.prototype.CHECKBOXES = ["open-bugs-in-new-window", "show-tables-in-tabs"];
 AppSettings.prototype._settings = {};
 AppSettings.prototype.oldCustomQueries = null;
 AppSettings.prototype.load = function () {
@@ -302,6 +302,7 @@ NeckoTriage = function () { };
 NeckoTriage.prototype.tables = {};
 NeckoTriage.prototype.rootElement = "#necko-triage-root";
 NeckoTriage.prototype.version = "0.0.4";
+NeckoTriage.prototype.useTabs = false;
 NeckoTriage.prototype.availableTables = {
     "untriaged-no-ni": {
         "is_user": false,
@@ -443,10 +444,27 @@ NeckoTriage.prototype.init = function () {
     });
 
     this.createUserTables();
+
+    // Finally, set up the tabs, now that all our DOM elements are in place
+    this.useTabs = this.settings.get("show-tables-in-tabs");
+    if (this.useTabs) {
+        $("#necko-triage-tabs").show();
+        this.rootElement.tabs();
+    }
 };
 NeckoTriage.prototype.reloadAll = function (resetUserTables) {
+    // In addition to destroying our tables if the user has un-checked the box,
+    // we need to destroy them (temporarily) if we're changing the list of
+    // user tables. This allows jquery-ui to set the proper classes on the new
+    // tables so they'll properly display as tabs.
+    if (this.useTabs && (resetUserTables || !this.settings.get("show-tables-in-tabs"))) {
+        this.rootElement.tabs("destroy");
+        $("#necko-triage-tabs").hide();
+    }
+
     if (resetUserTables) {
         $(".user-table").remove();
+        $(".user-table-tab").remove();
 
         let newTables = {};
         $.each(this.tables, function (k, table) {
@@ -464,6 +482,17 @@ NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     if (resetUserTables) {
         this.createUserTables();
     }
+
+    // This is the pair for the block at the top of this method - enable our tabs
+    // if (1) they're newly enabled, or (2) they were enabled *and* we changed
+    // the table list.
+    if ((!this.useTabs && this.settings.get("show-tables-in-tabs")) ||
+        (this.useTabs && resetUserTables)) {
+        $("#necko-triage-tabs").show();
+        this.rootElement.tabs();
+    }
+
+    this.useTabs = this.settings.get("show-tables-in-tabs");
 };
 NeckoTriage.prototype.createUserTables = function () {
     let customQueries = this.settings.get("custom-queries");
@@ -563,7 +592,7 @@ BugTable.prototype.display = function (data) {
         let iconSpan = $("<span />", {"class": "ui-icon " + icon});
         idTd.append(iconSpan);
         let href = "https://bugzilla.mozilla.org/show_bug.cgi?id=" + rowData["id"];
-        let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id});
+        let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id, "class": "bug-link"});
         if (self.triage.settings.get("open-bugs-in-new-window")) {
             link.attr("target", "_blank");
         }
@@ -656,6 +685,15 @@ BugTable.prototype.create = function () {
     rootContainer.append(this.table);
 
     this.triage.rootElement.append(rootContainer);
+
+    let tabClassString = "bug-tab";
+    if (this.isUser) {
+        classString += " user-table-tab";
+    }
+    let tab = $("<li />", {id: "bug-tab-" + this.id, "class": tabClassString});
+    let a = $("<a />", {href: "#bug-container-" + this.id, text: this.title});
+    tab.append(a);
+    $("#necko-triage-tabs").append(tab);
 
     this.load();
 };

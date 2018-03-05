@@ -36,6 +36,7 @@ body {
     display: none;
 }
 
+/* Ensure some space for icons without line wrapping */
 .bug-id {
     min-width: 8em;
 }
@@ -48,6 +49,7 @@ a {
     text-decoration: none;
 }
 
+/* Dialogs should be hidden until they are needed */
 .modal-dialog {
     display: none;
 }
@@ -66,4 +68,19 @@ a {
 
 .query-remove {
     margin-left: 1em;
+}
+
+/* Hide our tabs by default. Will be shown by js if needed */
+.tab-menu {
+    display: none;
+}
+
+/* Force links in bug tables to appear as links, otherwise the jquery-ui css
+   ends up taking precedence, and they just look like plain text */
+.ui-widget-content a.bug-link {
+    color: rgb(0, 0, 238);
+}
+
+.ui-widget-content a.bug-link:visited {
+    color: rgb(85, 26, 139);
 }
