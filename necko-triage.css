@@ -13,6 +13,10 @@ body {
     margin-top: 2em;
 }
 
+.ui-tabs .bug-container {
+    margin-top: 0;
+}
+
 .bug-table-title {
     font-size: large;
     font-weight: bold;
