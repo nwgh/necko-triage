@@ -34,6 +34,13 @@ body {
 
 .bug-error {
     display: none;
+    border: 1px solid darkred;
+    background: red;
+    padding-left: 0.5em;
+}
+
+.error .bug-error {
+    display: block;
 }
 
 /* Ensure some space for icons without line wrapping */
@@ -70,9 +77,12 @@ a {
     margin-left: 1em;
 }
 
-/* Hide our tabs by default. Will be shown by js if needed */
 .tab-menu {
     display: none;
+}
+
+.ui-tabs .tab-menu {
+    display: block;
 }
 
 /* Force links in bug tables to appear as links, otherwise the jquery-ui css
@@ -85,7 +95,14 @@ a {
     color: rgb(85, 26, 139);
 }
 
-/* Script will show these if necessary */
-.bug-count-prefix, .bug-count, .bug-count-postfix {
+.loading .bug-count-prefix,
+.loading .bug-count,
+.loading .bug-count-postfix,
+.ui-tabs-panel .bug-table-title,
+.ui-tabs-panel .bug-count-prefix,
+.ui-tabs-panel .bug-count-postfix,
+.zarro-boogs .bug-count-prefix,
+.zarro-boogs .bug-count,
+.zarro-boogs .bug-count-postfix {
     display: none;
 }

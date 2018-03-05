@@ -448,10 +448,6 @@ NeckoTriage.prototype.init = function () {
     // Finally, set up the tabs, now that all our DOM elements are in place
     this.useTabs = this.settings.get("show-tables-in-tabs");
     if (this.useTabs) {
-        $(".bug-table-title").hide();
-        $(".bug-count-prefix").hide();
-        $(".bug-count-postfix").hide();
-        $("#necko-triage-tabs").show();
         this.rootElement.tabs();
     }
 };
@@ -462,9 +458,6 @@ NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     // tables so they'll properly display as tabs.
     if (this.useTabs && (resetUserTables || !this.settings.get("show-tables-in-tabs"))) {
         this.rootElement.tabs("destroy");
-        $("#necko-triage-tabs").hide();
-        $(".bug-table-title").show();
-        // Rely on the display functionality to show the bug count prefix/postfix
     }
 
     if (resetUserTables) {
@@ -493,10 +486,6 @@ NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     // the table list.
     if ((!this.useTabs && this.settings.get("show-tables-in-tabs")) ||
         (this.useTabs && resetUserTables)) {
-        $("#necko-triage-tabs").show();
-        $(".bug-table-title").hide();
-        $(".bug-count-prefix").hide();
-        $(".bug-count-postfix").hide();
         this.rootElement.tabs();
     }
 
@@ -535,43 +524,36 @@ BugTable.prototype.query = {};
 BugTable.prototype.extraColumns = {};
 BugTable.prototype.rowSort = null;
 BugTable.prototype.triage = null;
+BugTable.prototype.root = null;
 BugTable.prototype.table = null;
-BugTable.prototype.errorContainer = null;
 BugTable.prototype.reloadSpan = null;
-BugTable.prototype.showError = function () {
-    this.errorContainer.text("Error loading bugs. Data may be stale.");
-    this.errorContainer.show();
-};
 BugTable.prototype.xhrError = function (xhr, status, errorThrown) {
     console.log("Error: " + errorThrown);
     console.log("Status: " + status);
     console.log(xhr);
+    this.root.addClass("error");
 };
 BugTable.prototype.displayError = function (error) {
     console.log("Bugzilla Error: " + error);
-    this.showError();
+    this.root.addClass("error");
 };
 BugTable.prototype.display = function (data) {
-    this.errorContainer.hide();
+    this.root.removeClass("error");
 
     let oldTable = this.table.children(".bug-table");
     if (oldTable) {
         oldTable.remove();
     }
 
-    let rootContainer = $("#bug-container-" + this.id);
     if (data["bugs"].length == 0) {
-        rootContainer.find(".bug-count-prefix, .bug-count, .bug-count-postfix").hide();
+        this.root.addClass("zarro-boogs");
         let div = $("<div />", {id: this.id, text: "Zarro Boogs!", "class": "bug-table"});
         this.table.append(div);
         return;
-    } else {
-        rootContainer.find("#bug-count-" + this.id).text("" + data["bugs"].length);
-        rootContainer.find(".bug-count").show();
-        if (!this.triage.settings.get("show-tables-in-tabs")) {
-            rootContainer.find(".bug-count-prefix, .bug-count-postfix").show();
-        }
     }
+
+    this.root.removeClass("zarro-boogs");
+    this.root.find("#bug-count-" + this.id).text("" + data["bugs"].length);
 
     let table = $("<table />", {id: this.id, "class": "bug-table"});
     let thead = $("<thead />", {id: "thead-" + this.id, "class": "bug-table-head"});
@@ -647,18 +629,12 @@ BugTable.prototype.display = function (data) {
     this.table.append(table);
 };
 BugTable.prototype.enableFunctionality = function () {
-    this.table.removeClass("loading");
-    this.table.off("click");
-
-    this.reloadSpan.removeClass("loading");
-    this.reloadSpan.click($.proxy(this, "load"));
+    this.root.removeClass("loading");
+    this.root.off("click");
 };
 BugTable.prototype.disableFunctionality = function () {
-    this.reloadSpan.click(function (e) {e.preventDefault();});
-    this.reloadSpan.addClass("loading");
-
-    this.table.click(function (e) {e.preventDefault();});
-    this.table.addClass("loading");
+    this.root.click(function (e) {e.preventDefault();});
+    this.root.addClass("loading");
 };
 BugTable.prototype.load = function () {
     this.disableFunctionality();
@@ -682,7 +658,11 @@ BugTable.prototype.create = function () {
     if (this.isUser) {
         classString += " user-table";
     }
-    let rootContainer = $("<div />", {"id": "bug-container-" + this.id, "class": classString});
+    this.root = $("<div />", {"id": "bug-container-" + this.id, "class": classString});
+
+    let errorContainer = $("<div />", {"class": "bug-error"});
+    errorContainer.text("Error loading from bugzilla. Data may be stale.");
+    this.root.append(errorContainer);
 
     let titleWrapper = $("<div />");
     let title = $("<span />", {text: this.title, "class": "bug-table-title"});
@@ -701,15 +681,12 @@ BugTable.prototype.create = function () {
     this.reloadSpan.click($.proxy(this, "load"));
 
     titleWrapper.append(this.reloadSpan);
-    rootContainer.append(titleWrapper);
-
-    this.errorContainer = $("<div />", {"class": "bug-error"});
-    rootContainer.append(this.errorContainer);
+    this.root.append(titleWrapper);
 
     this.table = $("<div />", {"id": this.id});
-    rootContainer.append(this.table);
+    this.root.append(this.table);
 
-    this.triage.rootElement.append(rootContainer);
+    this.triage.rootElement.append(this.root);
 
     let tabClassString = "bug-tab";
     if (this.isUser) {
