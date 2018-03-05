@@ -448,6 +448,9 @@ NeckoTriage.prototype.init = function () {
     // Finally, set up the tabs, now that all our DOM elements are in place
     this.useTabs = this.settings.get("show-tables-in-tabs");
     if (this.useTabs) {
+        $(".bug-table-title").hide();
+        $(".bug-count-prefix").hide();
+        $(".bug-count-postfix").hide();
         $("#necko-triage-tabs").show();
         this.rootElement.tabs();
     }
@@ -460,6 +463,8 @@ NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     if (this.useTabs && (resetUserTables || !this.settings.get("show-tables-in-tabs"))) {
         this.rootElement.tabs("destroy");
         $("#necko-triage-tabs").hide();
+        $(".bug-table-title").show();
+        // Rely on the display functionality to show the bug count prefix/postfix
     }
 
     if (resetUserTables) {
@@ -489,6 +494,9 @@ NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     if ((!this.useTabs && this.settings.get("show-tables-in-tabs")) ||
         (this.useTabs && resetUserTables)) {
         $("#necko-triage-tabs").show();
+        $(".bug-table-title").hide();
+        $(".bug-count-prefix").hide();
+        $(".bug-count-postfix").hide();
         this.rootElement.tabs();
     }
 
@@ -551,10 +559,18 @@ BugTable.prototype.display = function (data) {
         oldTable.remove();
     }
 
+    let rootContainer = $("#bug-container-" + this.id);
     if (data["bugs"].length == 0) {
+        rootContainer.find(".bug-count-prefix, .bug-count, .bug-count-postfix").hide();
         let div = $("<div />", {id: this.id, text: "Zarro Boogs!", "class": "bug-table"});
         this.table.append(div);
         return;
+    } else {
+        rootContainer.find("#bug-count-" + this.id).text("" + data["bugs"].length);
+        rootContainer.find(".bug-count").show();
+        if (!this.triage.settings.get("show-tables-in-tabs")) {
+            rootContainer.find(".bug-count-prefix, .bug-count-postfix").show();
+        }
     }
 
     let table = $("<table />", {id: this.id, "class": "bug-table"});
@@ -671,6 +687,15 @@ BugTable.prototype.create = function () {
     let titleWrapper = $("<div />");
     let title = $("<span />", {text: this.title, "class": "bug-table-title"});
     titleWrapper.append(title);
+
+    let countPrefix = $("<span />", {text: " (", "class": "bug-count-prefix"});
+    titleWrapper.append(countPrefix);
+    let countWrapper = $("<span />", {"class": "bug-count"});
+    let countHTML = "<span id=\"bug-count-" + this.id + "\"></span> bugs";
+    countWrapper.html(countHTML);
+    titleWrapper.append(countWrapper);
+    let countPostfix = $("<span />", {text: ")", "class": "bug-count-postfix"});
+    titleWrapper.append(countPostfix);
 
     this.reloadSpan = $("<span />", {"class": "reload-button ui-icon ui-icon-arrowrefresh-1-e", title: "Reload Table"});
     this.reloadSpan.click($.proxy(this, "load"));

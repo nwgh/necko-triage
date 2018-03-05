@@ -84,3 +84,8 @@ a {
 .ui-widget-content a.bug-link:visited {
     color: rgb(85, 26, 139);
 }
+
+/* Script will show these if necessary */
+.bug-count-prefix, .bug-count, .bug-count-postfix {
+    display: none;
+}
