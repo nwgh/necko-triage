@@ -16,7 +16,18 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js" integrity="sha256-9YAuB2VnFZNJ+lKfpaQ3dKQT9/C0j3VUla76hHbiVF8=" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.19.1/URI.min.js" integrity="sha256-D3tK9Rf/fVqBf6YDM8Q9NCNf/6+F2NOKnYSXHcl0keU=" crossorigin="anonymous"></script>
+        <script src="utils.js"></script>
+        <script src="app-settings.js"></script>
+        <script src="bug-table.js"></script>
         <script src="necko-triage.js"></script>
+        <script>
+            var triage = null;
+
+            $(function () {
+                triage = new NeckoTriage();
+                triage.init();
+            });
+        </script>
     </head>
     <body>
         <ul id="menu">
