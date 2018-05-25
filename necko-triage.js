@@ -136,6 +136,8 @@ NeckoTriage.prototype.init = function () {
     $("#menu").menu();
     $("#reload-all").click($.proxy(this, "reloadAll", false));
 
+    this.loadBugzillaMetadata();
+
     // Now load all the tables
     let self = this;
     $.each(this.availableTables, function (k, v) {
@@ -150,6 +152,32 @@ NeckoTriage.prototype.init = function () {
     if (this.useTabs) {
         this.rootElement.tabs();
     }
+};
+NeckoTriage.prototype.loadBugzillaMetadata = async function () {
+    let origin = this.settings.get("testing-only-bugzilla-origin");
+
+    let idQuery = [];
+    await $.getJSON(origin + "/rest/product_selectable").then((data) => {
+        idQuery = data;
+    }).promise();
+
+    this.products = {};
+    var self = this;
+    await $.getJSON({url: origin + "/rest/product",
+                     data: idQuery,
+                     type: "GET",
+                     traditional: true})
+                   .then(function (data) { self.products = data; }).promise();
+
+    this.statuses = [];
+    await $.getJSON(origin + "/rest/field/bug/status/values").then((data) => {
+        self.statuses = data["values"];
+    });
+
+    this.resolutions = [];
+    await $.getJSON(origin + "/rest/field/bug/resolution/values").then((data) => {
+        self.resolutions = data["values"];
+    });
 };
 NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     // In addition to destroying our tables if the user has un-checked the box,
@@ -207,4 +235,19 @@ NeckoTriage.prototype.createUserTable = function (index, customQuery) {
     let tableID = "user-query-" + index;
     this.tables[tableID] = new BugTable(tableID, queryConfig, this);
     this.tables[tableID].create();
+};
+
+NeckoTriage.prototype.autocompleteEmail = async function (request, response) {
+    let api_key = this.settings.get("bz-apikey");
+    let url = this.settings.get("testing-only-bugzilla-origin") + "/rest/user?api_key=" + api_key + "&match=" + request["term"];
+    let matches;
+
+    await $.getJSON({
+        url: url,
+        type: "GET",
+        processData: false,
+        headers: {"Content-Type": "application/json"}
+    }).done((data) => { matches = data["users"]; }).promise();
+
+    response(matches.map(x => x["email"]));
 };

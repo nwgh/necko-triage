@@ -64,3 +64,60 @@ function GetNI(dataRow) {
 
     return lastNI;
 }
+
+function MakeSelect(name, options, selected, valueGetter) {
+    let select = $("<select />", {name: name});
+
+    for (let i = 0; i < options.length; i++) {
+        let option;
+        if (valueGetter !== undefined) {
+            option = valueGetter(options[i]);
+        } else {
+            option = options[i];
+        }
+
+        let item;
+        if (option == selected) {
+            item = $("<option />", {"value": option, "text": option, "selected": true});
+        } else {
+            item = $("<option />", {"value": option, "text": option});
+        }
+
+        select.append(item);
+    }
+
+    return select;
+}
+
+function MakeLabel(node, label) {
+    let nodeName;
+    if (typeof node == "string") {
+        nodeName = node;
+    } else {
+        nodeName = node.attr("name");
+    }
+    return $("<label />", {"for": nodeName, "text": label});
+}
+
+function MakeCheckbox(name, label) {
+    let w = $("<span />", {"class": "checkbox-wrapper"});
+    w.append($("<input />", {"type": "checkbox", "name": name}));
+    w.append($("<label />", {"for": name, "text": label}));
+    return w;
+}
+
+function MakeTextbox(name, label, value) {
+    let w = $("<span />", {"class": "textbox-wrapper"});
+    w.append($("<label />", {"for": name, "text": label}));
+    let t = $("<input />", {"type": "text", "name": name});
+    if (value !== undefined) {
+        t.attr("value", value);
+    }
+    w.append(t);
+    return w;
+}
+
+function FormatDate(dateString) {
+    let d = new Date(dateString);
+    return d.toLocaleString();
+}

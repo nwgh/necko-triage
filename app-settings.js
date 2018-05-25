@@ -47,7 +47,7 @@ AppSettings = function () {
     this.load();
 };
 AppSettings.prototype.FIELDS = ["bz-apikey"];
-AppSettings.prototype.CHECKBOXES = ["open-bugs-in-new-window", "show-tables-in-tabs"];
+AppSettings.prototype.CHECKBOXES = ["open-bugs-in-new-window", "show-tables-in-tabs", "modally-edit-bugs"];
 AppSettings.prototype._settings = {};
 AppSettings.prototype.oldCustomQueries = null;
 AppSettings.prototype.load = function () {
@@ -124,7 +124,7 @@ AppSettings.prototype.saveCustomQueryAdd = function () {
     }
 
     let parsedURL = URI(queryURL);
-    if (parsedURL.origin() != "https://bugzilla.mozilla.org") {
+    if (parsedURL.origin() != this.get("testing-only-bugzilla-origin")) {
         this.showError("URL is not from BMO!");
         return;
     }
@@ -224,6 +224,12 @@ AppSettings.prototype.close = function () {
 AppSettings.prototype.get = function (key) {
     if (this._settings.hasOwnProperty(key)) {
         return this._settings[key];
+    }
+
+    if (key == "testing-only-bugzilla-origin") {
+        // We only reach this if it hasn't been overwritten manually for testing
+        // purposes.
+        return "https://bugzilla.mozilla.org";
     }
 
     return undefined;

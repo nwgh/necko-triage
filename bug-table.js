@@ -78,10 +78,14 @@ BugTable.prototype.display = function (data) {
         let idTd = $("<td />", {id: idPrefix + "id-" + self.id, "class": "bug-id"});
         let iconSpan = $("<span />", {"class": "ui-icon " + icon});
         idTd.append(iconSpan);
-        let href = "https://bugzilla.mozilla.org/show_bug.cgi?id=" + rowData["id"];
+        let href = self.triage.settings.get("testing-only-bugzilla-origin") + "/show_bug.cgi?id=" + rowData["id"];
         let link = $("<a />", {href: href, text: "" + rowData["id"], id: idPrefix + "a-" + self.id, "class": "bug-link"});
         if (self.triage.settings.get("open-bugs-in-new-window")) {
             link.attr("target", "_blank");
+        }
+        if (self.triage.settings.get("modally-edit-bugs")) {
+            link._BugView = new BugView(rowData["id"], self);
+            link.click($.proxy(link._BugView, "view"));
         }
         idTd.append(link);
         tr.append(idTd);
@@ -133,7 +137,7 @@ BugTable.prototype.load = function () {
     if (apiKey) {
         $.extend(query, {"api_key": apiKey});
     }
-    $.getJSON({url: "https://bugzilla.mozilla.org/rest/bug",
+    $.getJSON({url: this.triage.settings.get("testing-only-bugzilla-origin") + "/rest/bug",
                data: query,
                type: "GET",
                traditional: true})
