@@ -150,7 +150,13 @@ NeckoTriage.prototype.init = function () {
     // Finally, set up the tabs, now that all our DOM elements are in place
     this.useTabs = this.settings.get("show-tables-in-tabs");
     if (this.useTabs) {
-        this.rootElement.tabs();
+        this.rootElement.tabs({
+            "activate": (event, ui) => {
+                let uiId = ui["newTab"].attr("id");
+                let tableId = uiId.replace(/^bug-tab-/, "");
+                self.tables[tableId].load();
+            }
+        });
     }
 };
 NeckoTriage.prototype.loadBugzillaMetadata = async function () {
