@@ -159,3 +159,11 @@ a {
 .sortable {
     cursor: pointer;
 }
+
+.parenthesized:before {
+    content: "(";
+}
+
+.parenthesized:after {
+    content: ")";
+}

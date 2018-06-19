@@ -47,15 +47,31 @@ BugView.prototype.div = null;
 BugView.prototype.dialog = null;
 BugView.prototype.saved = false;
 BugView.prototype.bug = null;
+BugView.prototype.loadComments = true;
 
 BugView.prototype.newWrapper = function () {
     let newForm = $("<form />", {"class": "view-innards"});
     $(this.div.children(".view-innards")).replaceWith(newForm);
 
     return newForm;
-}
+};
+
+BugView.prototype.displayError = function(error, code) {
+    console.log("Bugzilla BugView Error: " + error);
+    console.log("Bugzilla BugView Error Code: " + code);
+
+    let rootEl = this.newWrapper();
+    rootEl.append($("<span />", {"class": "error-message", "text": error}));
+    rootEl.append($("<span />", {"class": "error-code parenthesized", "text": "" + code}));
+};
 
 BugView.prototype.display = function (data) {
+    if (data.hasOwnProperty("error") && data["error"]) {
+        this.displayError(data["message"], data["code"]);
+        this.loadComments = false;
+        return;
+    }
+
     this.bug = data.bugs[0];
 
     this.dialog.dialog("option", "title", "Bug " + this.id + " - " + this.bug.summary);
@@ -188,6 +204,8 @@ BugView.prototype.xhrError = function (xhr, status, errorThrown) {
     console.log("BugView errorThrown: " + errorThrown);
     console.log(xhr);
 
+    this.loadComments = false;
+
     this.dialog.dialog("option", "title", "Error");
 
     let errorDiv = $("<div />", {"class": "error bug-error"});
@@ -236,6 +254,8 @@ BugView.prototype.commentsFailed = function (xhr, status, errorThrown) {
 };
 
 BugView.prototype.loadData = async function() {
+    this.loadComments = true; // Will get set to false if main load fails
+
     let query = {"api_key": triage.settings.get("bz-apikey")};
     let bugUrl = triage.settings.get("testing-only-bugzilla-origin") + "/rest/bug/" + this.id;
     await $.getJSON({url: bugUrl,
@@ -245,13 +265,15 @@ BugView.prototype.loadData = async function() {
             .done($.proxy(this, "display"))
             .fail($.proxy(this, "xhrError")).promise();
 
-    let commentUrl = triage.settings.get("testing-only-bugzilla-origin") + "/rest/bug/" + this.id + "/comment";
-    await $.getJSON({url: commentUrl,
-               data: query,
-               type: "GET",
-               traditional: true})
-            .done($.proxy(this, "commentsReady"))
-            .fail($.proxy(this, "commentsFailed"));
+    if (this.loadComments) {
+        let commentUrl = triage.settings.get("testing-only-bugzilla-origin") + "/rest/bug/" + this.id + "/comment";
+        await $.getJSON({url: commentUrl,
+                   data: query,
+                   type: "GET",
+                   traditional: true})
+                .done($.proxy(this, "commentsReady"))
+                .fail($.proxy(this, "commentsFailed"));
+    }
 
     this.finishView();
 };
