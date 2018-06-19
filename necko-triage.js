@@ -34,8 +34,8 @@ NeckoTriage.prototype.availableTables = {
             "resolution": "---",
             "o2": "substring"
         },
-        "extra_columns": {},
-        "row_sort": SortBySeverity
+        "extra_columns": [],
+        "default_sort": "severity"
     },
     "untriaged-ni": {
         "is_user": false,
@@ -63,8 +63,8 @@ NeckoTriage.prototype.availableTables = {
             "o1": "substring",
             "priority": "--"
         },
-        "extra_columns": {"ni-date": {"title": "Last ni?", "data_selector": GetNI}},
-        "row_sort": SortByNI
+        "extra_columns": ["ni-date"],
+        "default_sort": "ni-date"
     },
     "malformed": {
         "is_user": false,
@@ -95,8 +95,8 @@ NeckoTriage.prototype.availableTables = {
             "priority": "--",
             "resolution": "---"
         },
-        "extra_columns": {},
-        "row_sort": SortBySeverity
+        "extra_columns": [],
+        "default_sort": "severity"
     },
     "p1-unassigned": {
         "is_user": false,
@@ -121,8 +121,8 @@ NeckoTriage.prototype.availableTables = {
             "resolution": "---",
             "o1": "isempty"
         },
-        "extra_columns": {},
-        "row_sort": SortBySeverity
+        "extra_columns": [],
+        "default_sort": "severity"
     }
 };
 NeckoTriage.prototype.init = function () {
@@ -235,7 +235,7 @@ NeckoTriage.prototype.createUserTables = function () {
 NeckoTriage.prototype.createUserTable = function (index, customQuery) {
     let queryConfig = $.extend({}, customQuery);
     queryConfig["extra_columns"] = [];
-    queryConfig["row_sort"] = SortBySeverity;
+    queryConfig["default_sort"] = "severity";
     queryConfig["is_user"] = true;
 
     let tableID = "user-query-" + index;

@@ -3,19 +3,33 @@ BugTable = function (id, config, triage) {
     this.title = config["title"];
     this.query = config["query"];
     this.extraColumns = config["extra_columns"]
-    this.rowSort = config["row_sort"];
+    this.rowSort = config["default_sort"];
     this.isUser = config["is_user"];
     this.triage = triage;
+};
+BugTable.formatters = {
+    "ni-date": GetNI
+};
+BugTable.columnTitles = {
+    "ni-date": "Last ni?"
+};
+BugTable.sorters = {
+    "ni-date": SortByNI,
+    "severity": SortBySeverity,
+    "id": SortByID
 };
 BugTable.prototype.id = "";
 BugTable.prototype.title = "";
 BugTable.prototype.query = {};
-BugTable.prototype.extraColumns = {};
+BugTable.prototype.extraColumns = [];
 BugTable.prototype.rowSort = null;
+BugTable.prototype.rowSortDirection = null;
 BugTable.prototype.triage = null;
 BugTable.prototype.root = null;
 BugTable.prototype.table = null;
 BugTable.prototype.reloadSpan = null;
+BugTable.prototype.data = null;
+BugTable.prototype.invertSort = false;
 BugTable.prototype.xhrError = function (xhr, status, errorThrown) {
     console.log("Error: " + errorThrown);
     console.log("Status: " + status);
@@ -28,13 +42,38 @@ BugTable.prototype.displayError = function (error) {
 };
 BugTable.prototype.display = function (data) {
     this.root.removeClass("error");
+    this.data = data;
+    this.makeTable();
+};
+BugTable.prototype.sort = function (a, b) {
+    let result = 0;
+    if (this.rowSort && BugTable.sorters.hasOwnProperty(this.rowSort)) {
+        result = BugTable.sorters[this.rowSort](a, b);
+        if (this.invertSort && result != 0) {
+            result = -result;
+        }
+    }
 
+    return result;
+};
+BugTable.prototype.sortTable = function (columnID) {
+    if (columnID != this.rowSort) {
+        // Our sort has changed, so default to non-inverted
+        this.invertSort = false;
+        this.rowSort = columnID;
+    } else {
+        // Same sort re-clicked - invert the sort
+        this.invertSort = !this.invertSort;
+    }
+    this.makeTable();
+};
+BugTable.prototype.makeTable = function () {
     let oldTable = this.table.children(".bug-table");
     if (oldTable) {
         oldTable.remove();
     }
 
-    if (data["bugs"].length == 0) {
+    if (this.data["bugs"].length == 0) {
         this.root.addClass("zarro-boogs");
         let div = $("<div />", {id: this.id, text: "Zarro Boogs!", "class": "bug-table"});
         this.table.append(div);
@@ -42,27 +81,35 @@ BugTable.prototype.display = function (data) {
     }
 
     this.root.removeClass("zarro-boogs");
-    this.root.find("#bug-count-" + this.id).text("" + data["bugs"].length);
+    this.root.find("#bug-count-" + this.id).text("" + this.data["bugs"].length);
 
     let table = $("<table />", {id: this.id, "class": "bug-table"});
     let thead = $("<thead />", {id: "thead-" + this.id, "class": "bug-table-head"});
     let thr = $("<tr />", {id: "thead-tr-" + this.id, "class": "bug-table-row"});
-    thr.append($("<th />", {text: "Bug ID", id: "thead-id-" + this.id, "class": "bug-id"}));
-    thr.append($("<th />", {text: "Severity", id: "thead-severity-" + this.id, "class": "bug-severity"}));
+    let idHead = $("<th />", {text: "Bug ID", id: "thead-id-" + this.id, "class": "bug-id sortable"});
+    idHead.click($.proxy(this, "sortTable", "id"));
+    thr.append(idHead);
+    let sevHead = $("<th />", {text: "Severity", id: "thead-severity-" + this.id, "class": "bug-severity sortable"});
+    sevHead.click($.proxy(this, "sortTable", "severity"));
+    thr.append(sevHead);
     thr.append($("<th />", {text: "Summary", id: "thead-summary-" + this.id, "class": "bug-summary"}));
     let self = this;
-    $.each(this.extraColumns, function (k, v) {
-        thr.append($("<th />", {text: v["title"], id: "thead-" + k + "-" + self.id, "class": "bug-" + k}));
-    });
+    for (let columnID of this.extraColumns) {
+        let columnTitle = BugTable.columnTitles[columnID];
+        let columnHead = $("<th />", {text: columnTitle, id: "thead-" + columnID + "-" + this.id, "class": "bug-" + columnID});
+        if (BugTable.sorters.hasOwnProperty(columnID)) {
+            columnHead.click($.proxy(this, "sortTable", columnID));
+            columnHead.addClass("sortable");
+        }
+        thr.append(columnHead);
+    }
     thead.append(thr);
     table.append(thead);
 
-    if (this.rowSort) {
-        data["bugs"].sort(this.rowSort);
-    }
+    this.data["bugs"].sort($.proxy(this, "sort"));
 
     let tbody = $("<tbody />", {id: "tbody-" + this.id, "class": "bug-table-body"});
-    $.each(data["bugs"], function (i, rowData) {
+    $.each(this.data["bugs"], function (i, rowData) {
         let idPrefix = "tr-" + i + "-";
         let tr = $("<tr />", {id: idPrefix + self.id, "class": "bug-table-row"});
 
@@ -96,10 +143,10 @@ BugTable.prototype.display = function (data) {
         let summaryTd = $("<td />", {text: rowData["summary"], id: idPrefix + "summary-" + self.id, "class": "bug-summary"});
         tr.append(summaryTd);
 
-        $.each(self.extraColumns, function (k, v) {
-            let td = $("<td />", {id: idPrefix + k + "-" + self.id, "class": "bug-" + k});
-            if (v.hasOwnProperty("data_selector")) {
-                let rowInfo = v["data_selector"](rowData);
+        for (let columnID of self.extraColumns) {
+            let td = $("<td />", {id: idPrefix + columnID + "-" + self.id, "class": "bug-" + columnID});
+            if (BugTable.formatters.hasOwnProperty(columnID)) {
+                let rowInfo = BugTable.formatters[columnID](rowData);
                 if ($.type(rowInfo) == "object") {
                     // Selector returned a created element, put it in our td.
                     td.append(rowInfo);
@@ -112,7 +159,7 @@ BugTable.prototype.display = function (data) {
             }
 
             tr.append(td);
-        });
+        }
 
         tbody.append(tr);
     });

@@ -1,3 +1,7 @@
+function SortByID(a, b) {
+    return a["id"] - b["id"];
+}
+
 function SortBySeverity(a, b) {
     const SeverityMap = [
         "blocker",
