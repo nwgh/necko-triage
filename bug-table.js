@@ -203,11 +203,10 @@ BugTable.prototype.load = function () {
 };
 BugTable.prototype.create = function () {
     // Build up our DOM objects, and stick them in the appropriate container
-    let classString = "bug-container";
+    this.root = $("<div />", {"id": "bug-container-" + this.id, "class": "bug-container"});
     if (this.isUser) {
-        classString += " user-table";
+        this.root.addClass("user-table");
     }
-    this.root = $("<div />", {"id": "bug-container-" + this.id, "class": classString});
 
     let errorContainer = $("<div />", {"class": "bug-error"});
     errorContainer.text("Error loading from bugzilla. Data may be stale.");
@@ -240,11 +239,10 @@ BugTable.prototype.create = function () {
 
     this.triage.rootElement.append(this.root);
 
-    let tabClassString = "bug-tab";
+    let tab = $("<li />", {id: "bug-tab-" + this.id, "class": "bug-tab"});
     if (this.isUser) {
-        classString += " user-table-tab";
+        tab.addClass("user-table-tab");
     }
-    let tab = $("<li />", {id: "bug-tab-" + this.id, "class": tabClassString});
     let a = $("<a />", {href: "#bug-container-" + this.id, text: this.title});
     tab.append(a);
     $("#necko-triage-tabs").append(tab);
