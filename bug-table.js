@@ -34,13 +34,22 @@ BugTable.prototype.xhrError = function (xhr, status, errorThrown) {
     console.log("Error: " + errorThrown);
     console.log("Status: " + status);
     console.log(xhr);
+    this.root.find(".error-message").text(error);
+    this.root.find(".error-code").text(status);
     this.root.addClass("error");
 };
-BugTable.prototype.displayError = function (error) {
+BugTable.prototype.displayError = function (error, code) {
     console.log("Bugzilla Error: " + error);
+    console.log("Bugzilla Error Code: " + code);
+    this.root.find(".error-message").text(error);
+    this.root.find(".error-code").text("" + code);
     this.root.addClass("error");
 };
 BugTable.prototype.display = function (data) {
+    if (data.hasOwnProperty("error") && data["error"]) {
+        this.displayError(data["message"], data["code"]);
+        return;
+    }
     this.root.removeClass("error");
     this.data = data;
     this.makeTable();
@@ -202,6 +211,9 @@ BugTable.prototype.create = function () {
 
     let errorContainer = $("<div />", {"class": "bug-error"});
     errorContainer.text("Error loading from bugzilla. Data may be stale.");
+    let bzDiv = $("<div />");
+    bzDiv.html("<span class=\"error-message\"></span> (<span class=\"error-code\"></span>)");
+    errorContainer.append(bzDiv);
     this.root.append(errorContainer);
 
     let titleWrapper = $("<div />");
