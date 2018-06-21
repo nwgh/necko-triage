@@ -98,33 +98,38 @@ BugView.prototype.display = function (data) {
     rootEl.append(triagedWrapper);
 
     // assignee textbox
-    let assigneeWrapper = $("<div />");
+    let assigneeID = "assignee-" + this.bug.id;
+    let assigneeWrapper = $("<div />", {"id": assigneeID});
     let assignee = MakeTextbox("assigned_to", "Assignee", this.bug.assigned_to);
     assigneeWrapper.append(assignee);
     rootEl.append(assigneeWrapper);
     assignee.find("input").autocomplete({
+        appendTo: assigneeID,
         minLength: 5,
         delay: 500,
         source: $.proxy(triage, "autocompleteEmail")
     });
 
     // ni? checkbox & textbox
-    let niWrapper = $("<div />", {"class": "ni"});
+    let niID = "ni-" + this.bug.id;
+    let niWrapper = $("<div />", {"class": "ni", "id": niID});
     let ni = MakeCheckbox("needinfo", "Get more info");
     niWrapper.append(ni);
     let requestee = MakeTextbox("requestee", "from", "");
-    requestee.find("input").autocomplete({
-        minLength: 5,
-        delay: 500,
-        source: $.proxy(triage, "autocompleteEmail")
-    });
     requestee.hide();
     // Hook up show/hide of requestee to checkbox change
     let niCheckbox = ni.find('input');
     niCheckbox.change((ev) => {
         if (niCheckbox.prop("checked")) {
             requestee.show();
+            requestee.find("input").autocomplete({
+                appendTo: niID,
+                minLength: 5,
+                delay: 500,
+                source: $.proxy(triage, "autocompleteEmail")
+            });
         } else {
+            requestee.find("input").autocomplete("destroy");
             requestee.hide();
         }
     });
