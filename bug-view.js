@@ -23,6 +23,9 @@ BugView = function(id, table) {
                 self.save();
             }
         },
+        open: function (e, u) {
+            self.fixupComments();
+        },
         beforeClose: function (e, u) {
             [changed, junk] = self.changed();
             if (changed && !self.saved) {
@@ -230,12 +233,27 @@ BugView.prototype.finishView = function () {
     this.dialog.dialog("open");
 };
 
+BugView.prototype.fixupComments = function () {
+    // The rest of the hack started below in commentsReady. This is called from
+    // the open event handler of the dialog.
+    let comments = this.div.find(".comments textarea");
+    comments.each((i, e) => {
+        let elem = $(e)
+        elem.css("height", "" + elem.prop("scrollHeight") + "px");
+    });
+};
+
 BugView.prototype.commentsReady = function (data) {
     let commentData = data["bugs"][this.id]["comments"];
     let comments = this.div.find(".comments");
 
     for (var i = 0; i < commentData.length; i++) {
-        let wrap = $("<div />", {"class": "comment", text: commentData[i]["text"]});
+        let wrap = $("<div />", {"class": "comment"});
+        let text = $("<textarea />", {text: commentData[i]["text"], "readonly": true});
+        // This is a hack to make the textarea the full height of the comment.
+        // The rest of the hack is in the fixupComments above.
+        text.css("height", "1px");
+        wrap.append(text);
         let meta = $("<div />");
         meta.append($("<span />", {"class": "author", text: commentData[i]["author"]}));
         meta.append($("<span />", {"class": "date", text: FormatDate(commentData[i]["time"])}));

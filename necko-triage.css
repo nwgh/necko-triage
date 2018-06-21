@@ -147,6 +147,11 @@ a {
     margin-bottom: 0.5em;
 }
 
+.view-innards .comments .comment textarea {
+    resize: none;
+    border: none;
+}
+
 .view-innards .comments .comment .author,
 .view-innards .comments .comment .date {
     font-size: small;
