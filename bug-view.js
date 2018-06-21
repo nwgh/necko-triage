@@ -16,7 +16,8 @@ BugView = function(id, table) {
     this.div.append(form);
     this.dialog = this.div.dialog({
         autoOpen: false,
-        width: 750,
+        position: { my: "top", at: "top", of: window },
+        width: $(window).width() - 100,
         modal: true,
         buttons: {
             Save: function () {
@@ -66,6 +67,39 @@ BugView.prototype.displayError = function(error, code) {
     let rootEl = this.newWrapper();
     rootEl.append($("<span />", {"class": "error-message", "text": error}));
     rootEl.append($("<span />", {"class": "error-code parenthesized", "text": "" + code}));
+};
+
+BugView.prototype.insertComponentOptions = function (select, product, chosenComponent) {
+    select.options.length = 0;
+    for (let i = 0; i < product["components"].length; i++) {
+        let component = product["components"][i];
+        select.options[i] = new Option(component, component, false, component == chosenComponent);
+    }
+};
+
+BugView.prototype.setComponentOptions = function (select, product, chosenComponent) {
+    if (product["components"]) {
+        this.insertComponentOptions(select, product, chosenComponent);
+        return;
+    }
+
+    this.dialog.addClass("loading");
+    this.dialog.click((e) => {e.preventDefault();});
+    let origin = triage.settings.get("testing-only-bugzilla-origin");
+    let self = this;
+    $.getJSON({url: origin + "/rest/product?include_fields=components&names=" + product["name"],
+                type: "GET",
+                traditional: true})
+                .then((data) => { let components = [];
+                                  let cs = data["products"][0]["components"];
+                                  for (let i = 0; i < cs.length; i++) {
+                                      components.push(cs[i]["name"]);
+                                  }
+                                  components.sort();
+                                  product["components"] = components;
+                                  self.insertComponentOptions(select, product, chosenComponent);
+                                  self.dialog.off("click");
+                                  self.dialog.removeClass("loading"); });
 };
 
 BugView.prototype.display = function (data) {
@@ -137,7 +171,7 @@ BugView.prototype.display = function (data) {
     rootEl.append(niWrapper);
 
     let pcWrapper = $("<div />", {"class": "product-component"});
-    let products = triage.products.products;
+    let products = triage.products;
     let productSelect = MakeSelect("product",
                                    products,
                                    this.bug.product,
@@ -146,30 +180,30 @@ BugView.prototype.display = function (data) {
     pcWrapper.append(productSelect);
 
     pcWrapper.append(MakeLabel("component", "Component"));
-    this.productComponentMap = {};
+    let componentSelect = MakeSelect("component", []);
+    pcWrapper.append(componentSelect);
     for (let i = 0; i < products.length; i++) {
         let chosenComponent = undefined;
         if (products[i].name == this.bug.product) {
             chosenComponent = this.bug.component;
+            this.setComponentOptions(componentSelect[0], products[i], chosenComponent);
+            break;
         }
-
-        let componentSelect = MakeSelect("component",
-                                         products[i].components,
-                                         chosenComponent,
-                                         (x) => { return x.name; });
-        if (products[i].name != this.bug.product) {
-            componentSelect.hide();
-        }
-        this.productComponentMap[products[i].name] = componentSelect;
-        pcWrapper.append(componentSelect);
     }
 
-    // Attach change listener to show/hide appropriate component selects
-    let pcMap = this.productComponentMap;
+    // Attach change listener to change available options
+    let self = this;
     productSelect.change((ev) => {
-        let showingComponent = pcWrapper.find("[name='component']:visible");
-        showingComponent.hide();
-        pcMap[productSelect.val()].show();
+        for (let i = 0; i < products.length; i++) {
+            if (products[i].name == productSelect.val()) {
+                if (products[i].name == this.bug.product) {
+                    self.setComponentOptions(componentSelect[0], products[i], this.bug.component);
+                } else {
+                    self.setComponentOptions(componentSelect[0], products[i]);
+                }
+                break;
+            }
+        }
     });
     rootEl.append(pcWrapper);
 
@@ -335,9 +369,13 @@ BugView.prototype.changed = function () {
     }
 
     // Component changed?
-    if (this.productComponentMap[product.val()].val() != this.bug.component) {
-        console.log(this.productComponentMap);
-        changedInputs["component"] = this.productComponentMap[product.val()].val();
+    let component = this.div.find("[name='component']");
+    if (component.val() === undefined) {
+        console.log("Missing component?!");
+    } else if (component.val() != this.bug.component || product.val() != this.bug.product) {
+        // Component changed (it counts as changed if the product changed, as
+        // two products may have components with the same name - i.e. "General").
+        changedInputs["component"] = component.val();
     }
 
     // Status changed?

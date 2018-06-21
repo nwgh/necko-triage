@@ -159,21 +159,47 @@ NeckoTriage.prototype.init = function () {
         });
     }
 };
+NeckoTriage.prototype.persistProducts = function (data) {
+    let ps = data["products"];
+    let products = [];
+    for (let i = 0; i < ps.length; i++) {
+        let product = {"name": ps[i]["name"],
+                       "components": []};
+        let cs = ps[i]["components"];
+        for (let j = 0; j < cs.length; j++) {
+            product["components"].push(cs[j]["name"]);
+        }
+        product["components"].sort();
+        products.push(product);
+    }
+    products.sort((a, b) => {
+        let au = a.name.toUpperCase();
+        let bu = b.name.toUpperCase();
+
+        if (au < bu) {
+            return -1;
+        }
+
+        if (au > bu) {
+            return 1;
+        }
+
+        return 0;
+    });
+    this.products = products;
+    window.localStorage.setItem("bz-products", JSON.stringify(this.products));
+};
+NeckoTriage.prototype.lazyRefreshProducts = function () {
+    let self = this;
+    let origin = this.settings.get("testing-only-bugzilla-origin");
+    $.getJSON({url: origin + "/rest/product?type=enterable&include_fields=name,components",
+               type: "GET",
+               traditional: true})
+             .then(function (data) { self.persistProducts(data); });
+};
 NeckoTriage.prototype.loadBugzillaMetadata = async function () {
     let origin = this.settings.get("testing-only-bugzilla-origin");
-
-    let idQuery = [];
-    await $.getJSON(origin + "/rest/product_selectable").then((data) => {
-        idQuery = data;
-    }).promise();
-
-    this.products = {};
-    var self = this;
-    await $.getJSON({url: origin + "/rest/product",
-                     data: idQuery,
-                     type: "GET",
-                     traditional: true})
-                   .then(function (data) { self.products = data; }).promise();
+    let self = this;
 
     this.statuses = [];
     await $.getJSON(origin + "/rest/field/bug/status/values").then((data) => {
@@ -184,6 +210,34 @@ NeckoTriage.prototype.loadBugzillaMetadata = async function () {
     await $.getJSON(origin + "/rest/field/bug/resolution/values").then((data) => {
         self.resolutions = data["values"];
     });
+
+    let products = window.localStorage.getItem("bz-products");
+    if (products) {
+        this.products = JSON.parse(products);
+        this.lazyRefreshProducts();
+    } else {
+        this.products = [];
+        await $.getJSON({url: origin + "/rest/product?type=enterable&include_fields=name",
+                        type: "GET",
+                        traditional: true})
+                    .then(function (data) { self.products = data["products"]; }).promise();
+        this.products.sort((a, b) => {
+            let au = a.name.toUpperCase();
+            let bu = b.name.toUpperCase();
+
+            if (au < bu) {
+                return -1;
+            }
+
+            if (au > bu) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        this.lazyRefreshProducts();
+    }
 };
 NeckoTriage.prototype.reloadAll = function (resetUserTables) {
     // In addition to destroying our tables if the user has un-checked the box,
