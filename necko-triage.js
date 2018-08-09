@@ -25,7 +25,8 @@ NeckoTriage.prototype.availableTables = {
                 "Networking: FTP",
                 "Networking: HTTP",
                 "Networking: JAR",
-                "Networking: WebSockets"
+                "Networking: WebSockets",
+                "DOM: Networking"
             ],
             "j1": "OR",
             "product": "Core",
@@ -55,7 +56,8 @@ NeckoTriage.prototype.availableTables = {
                 "Networking: FTP",
                 "Networking: HTTP",
                 "Networking: JAR",
-                "Networking: WebSockets"
+                "Networking: WebSockets",
+                "DOM: Networking"
             ],
             "f1": "flagtypes.name",
             "v1": "needinfo?",
@@ -90,7 +92,8 @@ NeckoTriage.prototype.availableTables = {
                 "Networking: FTP",
                 "Networking: HTTP",
                 "Networking: JAR",
-                "Networking: WebSockets"
+                "Networking: WebSockets",
+                "DOM: Networking"
             ],
             "priority": "--",
             "resolution": "---"
@@ -115,7 +118,8 @@ NeckoTriage.prototype.availableTables = {
                 "Networking: FTP",
                 "Networking: HTTP",
                 "Networking: JAR",
-                "Networking: WebSockets"
+                "Networking: WebSockets",
+                "DOM: Networking"
             ],
             "priority": "P1",
             "resolution": "---",
