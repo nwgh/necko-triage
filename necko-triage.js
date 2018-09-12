@@ -131,6 +131,32 @@ NeckoTriage.prototype.availableTables = {
         },
         "extra_columns": [],
         "default_sort": "severity"
+    },
+    "stalled": {
+        "is_user": false,
+        "title": "Stalled Bugs",
+        "query": {
+            "product": "Core",
+            "query_format": "advanced",
+            "component": [
+                "Networking",
+                "Networking: Cache",
+                "Networking: Cookies",
+                "Networking: DNS",
+                "Networking: Domain Lists",
+                "Networking: File",
+                "Networking: FTP",
+                "Networking: HTTP",
+                "Networking: JAR",
+                "Networking: WebSockets",
+                "DOM: Networking"
+            ],
+            "resolution": "---",
+            "keywords": "stalled",
+            "keywords_type": "allwords"
+        },
+        "extra_columns": [],
+        "default_sort": "severity"
     }
 };
 NeckoTriage.prototype.init = function () {
