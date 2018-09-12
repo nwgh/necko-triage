@@ -15,6 +15,8 @@ NeckoTriage.prototype.availableTables = {
             "f4": "CP",
             "status_whiteboard": "\\[necko-triaged\\]|\\[necko-active\\]|\\[necko-next\\]|\\[necko-backlog\\]|\\[necko-would-take\\]",
             "status_whiteboard_type": "notregexp",
+            "keywords": "stalled",
+            "keywords_type": "nowords",
             "component": [
                 "Networking",
                 "Networking: Cache",
@@ -46,6 +48,8 @@ NeckoTriage.prototype.availableTables = {
             "product": "Core",
             "query_format": "advanced",
             "status_whiteboard_type": "notregexp",
+            "keywords": "stalled",
+            "keywords_type": "nowords",
             "component": [
                 "Networking",
                 "Networking: Cache",
