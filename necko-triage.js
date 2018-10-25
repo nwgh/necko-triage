@@ -1,7 +1,7 @@
 NeckoTriage = function () { };
 NeckoTriage.prototype.tables = {};
 NeckoTriage.prototype.rootElement = "#necko-triage-root";
-NeckoTriage.prototype.version = "1.0.4";
+NeckoTriage.prototype.version = "1.0.5";
 NeckoTriage.prototype.useTabs = false;
 NeckoTriage.prototype.components = [
     "Networking",
