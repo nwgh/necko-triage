@@ -127,6 +127,7 @@ BugTable.prototype.makeTable = function () {
             // NWGH - there may be other groups here that should be called out
             // but for now, these are the only ones I know about.
             if (group == "network-core-security" ||
+                group == "core-security-release" ||
                 group == "core-security") {
                 icon = "ui-icon-locked";
             }
