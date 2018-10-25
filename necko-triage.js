@@ -86,13 +86,17 @@ NeckoTriage.prototype.availableTables = {
         "is_user": false,
         "title": "Unassigned P1 bugs",
         "query": {
+            "j_top": "OR",
             "f1": "assigned_to",
+            "o1": "isempty",
+            "f2": "assigned_to",
+            "o2": "equals",
+            "v2": "nobody@mozilla.org",
             "product": "Core",
             "query_format": "advanced",
             "component": NeckoTriage.prototype.components,
             "priority": "P1",
-            "resolution": "---",
-            "o1": "isempty"
+            "resolution": "---"
         },
         "extra_columns": [],
         "default_sort": "severity"
@@ -101,13 +105,17 @@ NeckoTriage.prototype.availableTables = {
         "is_user": false,
         "title": "Unassigned P2 bugs",
         "query": {
+            "j_top": "OR",
             "f1": "assigned_to",
+            "o1": "isempty",
+            "f2": "assigned_to",
+            "o2": "equals",
+            "v2": "nobody@mozilla.org",
             "product": "Core",
             "query_format": "advanced",
             "component": NeckoTriage.prototype.components,
             "priority": "P2",
-            "resolution": "---",
-            "o1": "isempty"
+            "resolution": "---"
         },
         "extra_columns": [],
         "default_sort": "severity"
