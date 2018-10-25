@@ -97,6 +97,21 @@ NeckoTriage.prototype.availableTables = {
         "extra_columns": [],
         "default_sort": "severity"
     },
+    "p2-unassigned": {
+        "is_user": false,
+        "title": "Unassigned P2 bugs",
+        "query": {
+            "f1": "assigned_to",
+            "product": "Core",
+            "query_format": "advanced",
+            "component": NeckoTriage.prototype.components,
+            "priority": "P2",
+            "resolution": "---",
+            "o1": "isempty"
+        },
+        "extra_columns": [],
+        "default_sort": "severity"
+    },
     "stalled": {
         "is_user": false,
         "title": "Stalled Bugs",
