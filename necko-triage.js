@@ -3,6 +3,19 @@ NeckoTriage.prototype.tables = {};
 NeckoTriage.prototype.rootElement = "#necko-triage-root";
 NeckoTriage.prototype.version = "1.0.4";
 NeckoTriage.prototype.useTabs = false;
+NeckoTriage.prototype.components = [
+    "Networking",
+    "Networking: Cache",
+    "Networking: Cookies",
+    "Networking: DNS",
+    "Networking: Domain Lists",
+    "Networking: File",
+    "Networking: FTP",
+    "Networking: HTTP",
+    "Networking: JAR",
+    "Networking: WebSockets",
+    "DOM: Networking"
+];
 NeckoTriage.prototype.availableTables = {
     "untriaged-no-ni": {
         "is_user": false,
@@ -17,19 +30,7 @@ NeckoTriage.prototype.availableTables = {
             "status_whiteboard_type": "notregexp",
             "keywords": "stalled",
             "keywords_type": "nowords",
-            "component": [
-                "Networking",
-                "Networking: Cache",
-                "Networking: Cookies",
-                "Networking: DNS",
-                "Networking: Domain Lists",
-                "Networking: File",
-                "Networking: FTP",
-                "Networking: HTTP",
-                "Networking: JAR",
-                "Networking: WebSockets",
-                "DOM: Networking"
-            ],
+            "component": NeckoTriage.prototype.components,
             "j1": "OR",
             "product": "Core",
             "v2": "needinfo?",
@@ -50,19 +51,7 @@ NeckoTriage.prototype.availableTables = {
             "status_whiteboard_type": "notregexp",
             "keywords": "stalled",
             "keywords_type": "nowords",
-            "component": [
-                "Networking",
-                "Networking: Cache",
-                "Networking: Cookies",
-                "Networking: DNS",
-                "Networking: Domain Lists",
-                "Networking: File",
-                "Networking: FTP",
-                "Networking: HTTP",
-                "Networking: JAR",
-                "Networking: WebSockets",
-                "DOM: Networking"
-            ],
+            "component": NeckoTriage.prototype.components,
             "f1": "flagtypes.name",
             "v1": "needinfo?",
             "resolution": "---",
@@ -86,19 +75,7 @@ NeckoTriage.prototype.availableTables = {
                 "ASSIGNED",
                 "REOPENED"
             ],
-            "component": [
-                "Networking",
-                "Networking: Cache",
-                "Networking: Cookies",
-                "Networking: DNS",
-                "Networking: Domain Lists",
-                "Networking: File",
-                "Networking: FTP",
-                "Networking: HTTP",
-                "Networking: JAR",
-                "Networking: WebSockets",
-                "DOM: Networking"
-            ],
+            "component": NeckoTriage.prototype.components,
             "priority": "--",
             "resolution": "---"
         },
@@ -112,19 +89,7 @@ NeckoTriage.prototype.availableTables = {
             "f1": "assigned_to",
             "product": "Core",
             "query_format": "advanced",
-            "component": [
-                "Networking",
-                "Networking: Cache",
-                "Networking: Cookies",
-                "Networking: DNS",
-                "Networking: Domain Lists",
-                "Networking: File",
-                "Networking: FTP",
-                "Networking: HTTP",
-                "Networking: JAR",
-                "Networking: WebSockets",
-                "DOM: Networking"
-            ],
+            "component": NeckoTriage.prototype.components,
             "priority": "P1",
             "resolution": "---",
             "o1": "isempty"
@@ -138,19 +103,7 @@ NeckoTriage.prototype.availableTables = {
         "query": {
             "product": "Core",
             "query_format": "advanced",
-            "component": [
-                "Networking",
-                "Networking: Cache",
-                "Networking: Cookies",
-                "Networking: DNS",
-                "Networking: Domain Lists",
-                "Networking: File",
-                "Networking: FTP",
-                "Networking: HTTP",
-                "Networking: JAR",
-                "Networking: WebSockets",
-                "DOM: Networking"
-            ],
+            "component": NeckoTriage.prototype.components,
             "resolution": "---",
             "keywords": "stalled",
             "keywords_type": "allwords"
